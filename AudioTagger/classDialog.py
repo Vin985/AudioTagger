@@ -1,17 +1,19 @@
 __author__ = 'peter'
 
+import copy
 import sys
 import warnings
 from collections import OrderedDict
-from PySide import QtCore, QtGui
+
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from AudioTagger.classDialog_auto import Ui_Dialog
-import copy
 
-class ClassDialog(QtGui.QDialog):
+
+class ClassDialog(QtWidgets.QDialog):
     settingsSig = QtCore.Signal(list)
 
-    def __init__(self, parent, classSettings=None, keySequences=None):
+    def __init__(self, parent, labels):
         super(ClassDialog, self).__init__(parent)
         # Usual setup stuff. Set up the user interface from Designer
         self.ui = Ui_Dialog()
@@ -19,44 +21,112 @@ class ClassDialog(QtGui.QDialog):
 
         self.connectSignals()
 
-
-        self.labelSetCnt = 0
+        # self.labelSetCnt = 0
+        self.label_count = 0
+        self.labels = labels
         self.creatingNewLabelSet = False
-        self.classUIs = []
+        # self.classUIs = []
 
-        self.classSettings = []
-        if classSettings is not None:
-            classSettings = copy.copy(classSettings)
-            while(True):
-                try:
-                    k, c = classSettings.popitem(last=False)
-                    self.classSettings += [[k, c]]
-                    self.createNewLabelSet(k, c)
-                except KeyError:
-                    break
+        for label in labels:
+            self.create_label_form(label)
+        self.create_label_form(label)
 
-        if keySequences:
-            for i, edit in enumerate(zip(*self.classUIs)[4]):
-                if i < len(keySequences):
-                    edit.setKeySequence(keySequences[i])
-                else:
-                    break
+        # self.classSettings = []
+        # if classSettings is not None:
+        #     classSettings = copy.copy(classSettings)
+        #     while(True):
+        #         try:
+        #             k, c = classSettings.popitem(last=False)
+        #             self.classSettings += [[k, c]]
+        #             self.createNewLabelSet(k, c)
+        #         except KeyError:
+        #             break
+        #
+        # if keySequences:
+        #     for i, edit in enumerate(zip(*self.classUIs)):
+        #         if i < len(keySequences):
+        #             edit.setKeySequence(keySequences[i])
+        #         else:
+        #             break
 
-        self.createNewLabelSet()
+        # self.createNewLabelSet()
 
     def getSettings(self):
         self.show()
 
-
     def connectSignals(self):
         self.ui.buttonBox.accepted.connect(self.sendSettings)
-        applyButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
+        applyButton = self.ui.buttonBox.button(
+            QtWidgets.QDialogButtonBox.Apply)
         applyButton.clicked.connect(self.sendSettings)
-
 
     def setLabelColor(self, label, color):
         colourStyle = "background-color: {0}".format(color.name())
         label.setStyleSheet(colourStyle)
+
+    def create_label_form(self, label=None):
+        self.creatingNewLabelSet = True
+
+        color = QtGui.QColor()
+        if not label:
+            name = ""
+            color.setRgb(255, 0, 127)
+            key_shortcut = self.label_count
+        else:
+            name = label["name"]
+            classColor.setRgb(255, 0, 127)
+            key_shortcut = label["shortcut"]
+
+        label_id = str(self.label_count)
+
+        label = QtWidgets.QLabel("Label {0}".format(self.label_count), self)
+        label.setObjectName("lbl_name_" + label_id)
+
+        edit = QtWidgets.QLineEdit(self)
+        edit.setObjectName("input_name_" + label_id)
+        edit.setText(className)
+
+        colourLbl = QtWidgets.QLabel("       ", self)
+        colourLbl.setObjectName("lbl_colour_" + label_id)
+        self.setLabelColor(colourLbl, classColor)
+
+        button = QtWidgets.QPushButton(self)
+        button.setObjectName("btn_color_" + label_id)
+        button.setText("Select colour")
+
+        klabel = QtWidgets.QLabel("Keyboard shortcut: ", self)
+        klabel.setObjectName("lbl_keyseq_" + label_id)
+
+        # TODO: looks fishy... doesnt use the loaded value
+        keySeq = QtGui.QKeySequence(int(QtCore.Qt.Key_0) + self.label_count)
+
+        keyEdit = KeySequenceEdit(keySeq, self)
+        keyEdit.setObjectName("input_keyseq_" + label_id)
+
+        self.ui.gridLayout.addWidget(label, self.labelSetCnt, 0, 1, 1)
+        self.ui.gridLayout.addWidget(edit, self.labelSetCnt, 1, 1, 1)
+        self.ui.gridLayout.addWidget(colourLbl, self.labelSetCnt, 2, 1, 1)
+        self.ui.gridLayout.addWidget(button, self.labelSetCnt, 3, 1, 1)
+        self.ui.gridLayout.addWidget(klabel, self.labelSetCnt, 4, 1, 1)
+        self.ui.gridLayout.addWidget(keyEdit, self.labelSetCnt, 5, 1, 1)
+
+        idx = self.label_count
+        def btnCon(): return self.selectColor(idx)
+        button.clicked.connect(btnCon)
+
+        def leCon(): return self.lineEditFinished(idx)
+        edit.editingFinished.connect(leCon)
+
+        self.label_count += 1
+        self.creatingNewLabelSet = False
+
+        self.ui.scrollArea.viewport().updateGeometry()
+        self.ui.scrollArea.viewport().update()
+        self.ui.scrollArea.updateGeometry()
+
+        # scroll->viewport()->updateGeometry();
+        # scroll->viewport()->update();
+        # scroll->update();
 
     def createNewLabelSet(self, className=None, classColor=None, keyName=None):
         self.creatingNewLabelSet = True
@@ -70,19 +140,19 @@ class ClassDialog(QtGui.QDialog):
         if keyName is None:
             keyName = self.labelSetCnt
 
-        label = QtGui.QLabel("Class {0}".format(self.labelSetCnt), self)
-        edit = QtGui.QLineEdit(self)
+        label = QtWidgets.QLabel("Class {0}".format(self.labelSetCnt), self)
+        edit = QtWidgets.QLineEdit(self)
         edit.setText(className)
 
-        colourLbl = QtGui.QLabel("       ".format(self.labelSetCnt), self)
+        colourLbl = QtWidgets.QLabel("       ".format(self.labelSetCnt), self)
         self.setLabelColor(colourLbl, classColor)
 
-        button = QtGui.QPushButton(self)
+        button = QtWidgets.QPushButton(self)
         button.setText("select colour")
 
-        klabel = QtGui.QLabel("Keyboard shortcut: ", self)
+        klabel = QtWidgets.QLabel("Keyboard shortcut: ", self)
         keySeq = QtGui.QKeySequence(int(QtCore.Qt.Key_0) + self.labelSetCnt)
-        keyEdit =  KeySequenceEdit(keySeq, self)
+        keyEdit = KeySequenceEdit(keySeq, self)
         # edit.setText(className)
 
         self.ui.gridLayout.addWidget(label, self.labelSetCnt, 0, 1, 1)
@@ -93,10 +163,10 @@ class ClassDialog(QtGui.QDialog):
         self.ui.gridLayout.addWidget(keyEdit, self.labelSetCnt, 5, 1, 1)
 
         idx = int(self.labelSetCnt)
-        btnCon = lambda: self.selectColor(idx)
+        def btnCon(): return self.selectColor(idx)
         button.clicked.connect(btnCon)
 
-        leCon = lambda: self.lineEditFinished(idx)
+        def leCon(): return self.lineEditFinished(idx)
         edit.editingFinished.connect(leCon)
 
         self.classUIs += [[label, edit, colourLbl, button, keyEdit]]
@@ -115,16 +185,15 @@ class ClassDialog(QtGui.QDialog):
         # scroll->viewport()->update();
         # scroll->update();
 
-
     def selectColor(self, idx):
-        color = QtGui.QColorDialog.getColor()
+        color = QtWidgets.QColorDialog.getColor()
         self.setLabelColor(self.classUIs[idx][2], color)
         self.classSettings[idx][1] = color
 
     def lineEditFinished(self, idx):
         self.classSettings[idx][0] = self.classUIs[idx][1].text()
 
-        if idx < len(self.classUIs) -1:
+        if idx < len(self.classUIs) - 1:
             return
 
         if self.classUIs[idx][1].text() != "":
@@ -133,11 +202,11 @@ class ClassDialog(QtGui.QDialog):
 
     def sendSettings(self):
         classSettings = OrderedDict()
-        for k ,c in self.classSettings:
+        for k, c in self.classSettings:
             if k != '':
                 classSettings[k] = c
 
-        keySequences  = []
+        keySequences = []
         for cLbl, e, cLbl, b, keyEdit in self.classUIs:
             keySequences += [keyEdit.keySequence]
 
@@ -146,7 +215,7 @@ class ClassDialog(QtGui.QDialog):
         self.settingsSig.emit([classSettings, keySequences])
 
 
-class KeySequenceEdit(QtGui.QLineEdit):
+class KeySequenceEdit(QtWidgets.QLineEdit):
     """
     This class is mainly inspired by
     http://stackoverflow.com/a/6665017
@@ -163,7 +232,6 @@ class KeySequenceEdit(QtGui.QLineEdit):
         self.keySequence = keySequence
         self.setText(self.keySequence.toString(QtGui.QKeySequence.NativeText))
 
-
     def keyPressEvent(self, e):
         if e.type() == QtCore.QEvent.KeyPress:
             key = e.key()
@@ -173,12 +241,13 @@ class KeySequenceEdit(QtGui.QLineEdit):
                 return
 
             # the user have clicked just and only the special keys Ctrl, Shift, Alt, Meta.
-            if(key == QtCore.Qt.Key_Control or
-               key == QtCore.Qt.Key_Shift or
-               key == QtCore.Qt.Key_Alt or
-               key == QtCore.Qt.Key_Meta):
+            if(key == QtCore.Qt.Key_Control
+               or key == QtCore.Qt.Key_Shift
+               or key == QtCore.Qt.Key_Alt
+               or key == QtCore.Qt.Key_Meta):
                 print("Single click of special key: Ctrl, Shift, Alt or Meta")
-                print("New KeySequence:", QtGui.QKeySequence(key).toString(QtGui.QKeySequence.NativeText))
+                print("New KeySequence:", QtGui.QKeySequence(
+                    key).toString(QtGui.QKeySequence.NativeText))
                 return
 
             # check for a combination of user clicks
@@ -196,14 +265,14 @@ class KeySequenceEdit(QtGui.QLineEdit):
             if modifiers & QtCore.Qt.MetaModifier:
                 key += QtCore.Qt.META
 
-            print("New KeySequence:", QtGui.QKeySequence(key).toString(QtGui.QKeySequence.NativeText))
+            print("New KeySequence:", QtGui.QKeySequence(
+                key).toString(QtGui.QKeySequence.NativeText))
 
             self.setKeySequence(QtGui.QKeySequence(key))
 
 
-
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     w = ClassDialog(None)
 

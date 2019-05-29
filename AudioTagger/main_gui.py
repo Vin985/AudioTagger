@@ -7,46 +7,44 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-# from PySide import QtCore, QtGui
+# from PySide import QtCore, QtWidgets
 
-
-from PySide import QtCore, QtGui, QtSvg
 
 import os
+
+from PySide2 import QtCore, QtSvg, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(876, 584)
-        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
 
         self.create_graphic_views()
         self.create_elements()
         self.create_layouts()
         self.fill_layouts()
 
-
-
-
         # MENU
 
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = MainWindow.menuBar()# QtGui.QMenuBar(MainWindow)
+        self.menubar = MainWindow.menuBar()  # QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 876, 21))
         self.menubar.setObjectName("menubar")
-        self.menuFile = QtGui.QMenu(self.menubar)
+        self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.actionOpen_folder = QtGui.QAction(MainWindow)
+        self.actionOpen_folder = QtWidgets.QAction(MainWindow)
         self.actionOpen_folder.setObjectName("actionOpen_folder")
-        self.actionClass_settings = QtGui.QAction(MainWindow)
+        self.actionClass_settings = QtWidgets.QAction(MainWindow)
         self.actionClass_settings.setObjectName("actionClass_settings")
-        self.actionExport_settings = QtGui.QAction(MainWindow)
+        self.actionExport_settings = QtWidgets.QAction(MainWindow)
         self.actionExport_settings.setObjectName("actionExport_settings")
-        self.actionImport_settings = QtGui.QAction(MainWindow)
+        self.actionImport_settings = QtWidgets.QAction(MainWindow)
         self.actionImport_settings.setObjectName("actionImport_settings")
         self.menuFile.addAction(self.actionOpen_folder)
         self.menuFile.addSeparator()
@@ -58,26 +56,26 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
-
-
     def create_graphic_views(self):
-        self.gw_overview = QtGui.QGraphicsView(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
+        self.gw_overview = QtWidgets.QGraphicsView(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.gw_overview.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.gw_overview.sizePolicy().hasHeightForWidth())
         self.gw_overview.setSizePolicy(sizePolicy)
         self.gw_overview.setObjectName("gw_overview")
 
-        self.scrollView = QtGui.QGraphicsView(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
+        self.scrollView = QtWidgets.QGraphicsView(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.scrollView.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.scrollView.sizePolicy().hasHeightForWidth())
         self.scrollView.setSizePolicy(sizePolicy)
         self.scrollView.setObjectName("scrollView")
-
 
     def create_elements(self):
         self.iconFolder = SVGButton.getIconFolder()
@@ -102,29 +100,30 @@ class Ui_MainWindow(object):
         self.pb_toggle_back.load(self.iconFolder + '/fa-chevron-left.svg')
         self.pb_toggle_back.setToolTip("Toggle backwards through annotaions")
 
-        # self.pb_edit = QtGui.QPushButton(self.centralwidget)
+        # self.pb_edit = QtWidgets.QPushButton(self.centralwidget)
         # self.pb_edit.setObjectName("pb_edit")
-
 
         self.pb_toggle_create = SVGButton(self.centralwidget)
         self.pb_toggle_create.load(self.iconFolder + '/fa-toggle-on.svg')
         self.pb_toggle_create.setToolTip("Click to modify annotations")
 
-        self.lbl_spec_modify = QtGui.QLabel(self.centralwidget)
-        self.lbl_spec_create = QtGui.QLabel(self.centralwidget)
+        self.lbl_spec_modify = QtWidgets.QLabel(self.centralwidget)
+        self.lbl_spec_create = QtWidgets.QLabel(self.centralwidget)
 
-
-        # self.cb_create = QtGui.QCheckBox(self.centralwidget)
+        # self.cb_create = QtWidgets.QCheckBox(self.centralwidget)
         # self.cb_create.setChecked(True)
         # self.cb_create.setObjectName("cb_create")
 
-        self.lbl_audio = QtGui.QLabel(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        self.lbl_audio = QtWidgets.QLabel(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lbl_audio.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.lbl_audio.sizePolicy().hasHeightForWidth())
         self.lbl_audio.setSizePolicy(sizePolicy)
-        self.lbl_audio.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_audio.setAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.lbl_audio.setObjectName("lbl_audio")
 
         self.pb_play = SVGButton(self.centralwidget)
@@ -139,109 +138,121 @@ class Ui_MainWindow(object):
         self.pb_seek.load(self.iconFolder + '/fa-map-signs.svg')
         self.pb_seek.setToolTip("Seek")
 
-        self.lbl_audio_position = QtGui.QLabel(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        self.lbl_audio_position = QtWidgets.QLabel(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lbl_audio_position.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.lbl_audio_position.sizePolicy().hasHeightForWidth())
         self.lbl_audio_position.setSizePolicy(sizePolicy)
-        self.lbl_audio_position.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lbl_audio_position.setAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.lbl_audio_position.setObjectName("lbl_audio_position")
         self.lbl_audio_position.setVisible(False)
 
-        self.lbl_followSound = QtGui.QLabel(self.centralwidget)
-        self.cb_followSound = QtGui.QCheckBox(self.centralwidget)
+        self.lbl_followSound = QtWidgets.QLabel(self.centralwidget)
+        self.cb_followSound = QtWidgets.QCheckBox(self.centralwidget)
         self.cb_followSound.setObjectName("cb_followSound")
 
-        # self.lbl_zoom = QtGui.QLabel(self.centralwidget)
-        # sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        # self.lbl_zoom = QtWidgets.QLabel(self.centralwidget)
+        # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
         # sizePolicy.setVerticalStretch(0)
         # sizePolicy.setHeightForWidth(self.lbl_zoom.sizePolicy().hasHeightForWidth())
         # self.lbl_zoom.setSizePolicy(sizePolicy)
         # self.lbl_zoom.setObjectName("lbl_zoom")
 
-        self.lbl_playbackSpeed = QtGui.QLabel(self.centralwidget)
-        self.cb_playbackSpeed = QtGui.QComboBox(self.centralwidget)
+        self.lbl_playbackSpeed = QtWidgets.QLabel(self.centralwidget)
+        self.cb_playbackSpeed = QtWidgets.QComboBox(self.centralwidget)
         self.cb_playbackSpeed.setObjectName("cb_playbackSpeed")
 
-        self.lbl_specType = QtGui.QLabel(self.centralwidget)
-        self.cb_specType = QtGui.QComboBox(self.centralwidget)
+        self.lbl_specType = QtWidgets.QLabel(self.centralwidget)
+        self.cb_specType = QtWidgets.QComboBox(self.centralwidget)
         self.cb_specType.setObjectName("cb_specType")
         self.cb_specType.addItem("")
         self.cb_specType.addItem("")
 
-        self.lbl_labelType = QtGui.QLabel(self.centralwidget)
-        self.cb_labelType = QtGui.QComboBox(self.centralwidget)
+        self.lbl_labelType = QtWidgets.QLabel(self.centralwidget)
+        self.cb_labelType = QtWidgets.QComboBox(self.centralwidget)
         self.cb_labelType.setObjectName("cb_labelType")
 
-        self.cb_file = QtGui.QComboBox(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
+        self.cb_file = QtWidgets.QComboBox(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cb_file.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.cb_file.sizePolicy().hasHeightForWidth())
         self.cb_file.setSizePolicy(sizePolicy)
         self.cb_file.setObjectName("cb_file")
 
-        # self.info_viewer = QtGui.QLabel(self.centralwidget)
-        # self.info_viewer = QtGui.QTextEdit(self.centralwidget)
+        # self.info_viewer = QtWidgets.QLabel(self.centralwidget)
+        # self.info_viewer = QtWidgets.QTextEdit(self.centralwidget)
         self.info_viewer = SmallEdit(self.centralwidget)
 
         # self.info_viewer.setMinimumSize(100, 10)
         # self.info_viewer.setFixedSize(100, 100)
-        # self.info_viewer.setSizePolicy(QtGui.QSizePolicy.Ignored, QtGui.QSizePolicy.Ignored)
-
+        # self.info_viewer.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 
     def create_layouts(self):
-        self.structure_layout = QtGui.QVBoxLayout(self.centralwidget)
+        self.structure_layout = QtWidgets.QVBoxLayout(self.centralwidget)
 
-        self.control_info_widget = QtGui.QWidget(self.centralwidget)
-        self.control_info_splitter = QtGui.QHBoxLayout(self.control_info_widget)
-        self.control_info_widget.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.control_info_widget = QtWidgets.QWidget(self.centralwidget)
+        self.control_info_splitter = QtWidgets.QHBoxLayout(
+            self.control_info_widget)
+        self.control_info_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
 
-        self.file_control_widget = QtGui.QWidget(self.centralwidget)
-        self.file_control_layout = QtGui.QVBoxLayout(self.file_control_widget)
-        self.file_control_layout.setContentsMargins(0,0,0,0)
-        self.file_control_widget.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
+        self.file_control_widget = QtWidgets.QWidget(self.centralwidget)
+        self.file_control_layout = QtWidgets.QVBoxLayout(
+            self.file_control_widget)
+        self.file_control_layout.setContentsMargins(0, 0, 0, 0)
+        self.file_control_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
 
-        self.sound_spec_widget = QtGui.QWidget(self.centralwidget)
-        self.sound_spec_layout = QtGui.QHBoxLayout(self.sound_spec_widget)
-        self.sound_spec_layout.setContentsMargins(0,0,0,0)
+        self.sound_spec_widget = QtWidgets.QWidget(self.centralwidget)
+        self.sound_spec_layout = QtWidgets.QHBoxLayout(self.sound_spec_widget)
+        self.sound_spec_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.sound_parts_widget = QtGui.QWidget(self.centralwidget)
-        self.sound_parts_layout = QtGui.QVBoxLayout(self.sound_parts_widget)
+        self.sound_parts_widget = QtWidgets.QWidget(self.centralwidget)
+        self.sound_parts_layout = QtWidgets.QVBoxLayout(
+            self.sound_parts_widget)
         self.sound_parts_layout.setSpacing(10)
-        self.sound_parts_layout.setContentsMargins(0,0,0,0)
+        self.sound_parts_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.sound_settings_widget = QtGui.QWidget(self.centralwidget)
-        self.sound_settings_layout = QtGui.QFormLayout(self.sound_settings_widget)
-        self.sound_settings_layout.setContentsMargins(0,0,0,0)
+        self.sound_settings_widget = QtWidgets.QWidget(self.centralwidget)
+        self.sound_settings_layout = QtWidgets.QFormLayout(
+            self.sound_settings_widget)
+        self.sound_settings_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.spec_parts_widget = QtGui.QWidget(self.centralwidget)
-        self.spec_parts_layout = QtGui.QVBoxLayout(self.spec_parts_widget)
-        self.spec_parts_layout.setContentsMargins(0,0,0,0)
+        self.spec_parts_widget = QtWidgets.QWidget(self.centralwidget)
+        self.spec_parts_layout = QtWidgets.QVBoxLayout(self.spec_parts_widget)
+        self.spec_parts_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.sound_controls_widget = QtGui.QWidget(self.centralwidget)
-        self.sound_controls_layout = QtGui.QHBoxLayout(self.sound_controls_widget)
+        self.sound_controls_widget = QtWidgets.QWidget(self.centralwidget)
+        self.sound_controls_layout = QtWidgets.QHBoxLayout(
+            self.sound_controls_widget)
         self.sound_controls_layout.setSpacing(10)
-        self.sound_controls_layout.setContentsMargins(0,0,0,0)
+        self.sound_controls_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.spec_interact_widget = QtGui.QWidget(self.centralwidget)
-        self.spec_interact_layout = QtGui.QHBoxLayout(self.spec_interact_widget)
+        self.spec_interact_widget = QtWidgets.QWidget(self.centralwidget)
+        self.spec_interact_layout = QtWidgets.QHBoxLayout(
+            self.spec_interact_widget)
         self.spec_interact_layout.setSpacing(10)
-        self.spec_interact_layout.setContentsMargins(0,0,0,0)
+        self.spec_interact_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.spec_settings_widget = QtGui.QWidget(self.centralwidget)
-        self.spec_settings_layout = QtGui.QFormLayout(self.spec_settings_widget)
+        self.spec_settings_widget = QtWidgets.QWidget(self.centralwidget)
+        self.spec_settings_layout = QtWidgets.QFormLayout(
+            self.spec_settings_widget)
         self.spec_settings_layout.setSpacing(10)
-        self.spec_settings_layout.setContentsMargins(0,0,0,0)
+        self.spec_settings_layout.setContentsMargins(0, 0, 0, 0)
 
-
-        self.create_modify_widget = QtGui.QWidget(self.centralwidget)
-        self.create_modify_layout = QtGui.QHBoxLayout(self.create_modify_widget)
+        self.create_modify_widget = QtWidgets.QWidget(self.centralwidget)
+        self.create_modify_layout = QtWidgets.QHBoxLayout(
+            self.create_modify_widget)
         self.create_modify_layout.setSpacing(5)
-        self.create_modify_layout.setContentsMargins(0,0,0,0)
-
+        self.create_modify_layout.setContentsMargins(0, 0, 0, 0)
 
     def fill_layouts(self):
         self.structure_layout.addWidget(self.gw_overview)
@@ -269,8 +280,10 @@ class Ui_MainWindow(object):
         self.sound_controls_layout.addWidget(self.pb_seek)
         self.sound_controls_layout.addStretch(0)
 
-        self.sound_settings_layout.addRow(self.lbl_followSound, self.cb_followSound)
-        self.sound_settings_layout.addRow(self.lbl_playbackSpeed, self.cb_playbackSpeed)
+        self.sound_settings_layout.addRow(
+            self.lbl_followSound, self.cb_followSound)
+        self.sound_settings_layout.addRow(
+            self.lbl_playbackSpeed, self.cb_playbackSpeed)
 
         self.spec_parts_layout.addWidget(self.spec_interact_widget)
         self.spec_parts_layout.addWidget(self.spec_settings_widget)
@@ -292,60 +305,72 @@ class Ui_MainWindow(object):
 
         self.centralwidget.setLayout(self.structure_layout)
 
-
-
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_prev.setText(QtGui.QApplication.translate("MainWindow", "show previous audio file", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_next.setText(QtGui.QApplication.translate("MainWindow", "show next audio file", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_save.setText(QtGui.QApplication.translate("MainWindow", "save", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_toggle.setText(QtGui.QApplication.translate("MainWindow", "toggle", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_edit.setText(QtGui.QApplication.translate("MainWindow", "edit", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_debug.setText(QtGui.QApplication.translate("MainWindow", "debug", None, QtGui.QApplication.UnicodeUTF8))
-        # self.cb_create.setText(QtGui.QApplication.translate("MainWindow", "create", None, QtGui.QApplication.UnicodeUTF8))
-        # self.lbl_audio.setText(QtGui.QApplication.translate("MainWindow", "audio: ", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_play.setText(QtGui.QApplication.translate("MainWindow", "play", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_stop.setText(QtGui.QApplication.translate("MainWindow", "stop", None, QtGui.QApplication.UnicodeUTF8))
-        # self.pb_seek.setText(QtGui.QApplication.translate("MainWindow", "seek", None, QtGui.QApplication.UnicodeUTF8))
-        # self.lbl_audio_position.setText(QtGui.QApplication.translate("MainWindow", "position:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_followSound.setText(QtGui.QApplication.translate("MainWindow", "follow sound", None, QtGui.QApplication.UnicodeUTF8))
-        # self.lbl_zoom.setText(QtGui.QApplication.translate("MainWindow", " Vertical zoom: 1x", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_playbackSpeed.setText(QtGui.QApplication.translate("MainWindow", "playback speed:", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_specType.setText(QtGui.QApplication.translate("MainWindow", "spectrogram range", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_labelType.setText(QtGui.QApplication.translate("MainWindow", "active label", None, QtGui.QApplication.UnicodeUTF8))
-        self.cb_specType.setItemText(0, QtGui.QApplication.translate("MainWindow", "audible", None, QtGui.QApplication.UnicodeUTF8))
-        self.cb_specType.setItemText(1, QtGui.QApplication.translate("MainWindow", "ultra sonic", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_spec_create.setText(QtGui.QApplication.translate("MainWindow", "create", None, QtGui.QApplication.UnicodeUTF8))
-        self.lbl_spec_modify.setText(QtGui.QApplication.translate("MainWindow", "modify", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionOpen_folder.setText(QtGui.QApplication.translate("MainWindow", "Open folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionClass_settings.setText(QtGui.QApplication.translate("MainWindow", "Class settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionExport_settings.setText(QtGui.QApplication.translate("MainWindow", "export settings", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionImport_settings.setText(QtGui.QApplication.translate("MainWindow", "import settings", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow",
+                                                                   "MainWindow", None))
+        # self.pb_prev.setText(QtWidgets.QApplication.translate("MainWindow", "show previous audio file", None))
+        # self.pb_next.setText(QtWidgets.QApplication.translate("MainWindow", "show next audio file", None))
+        # self.pb_save.setText(QtWidgets.QApplication.translate("MainWindow", "save", None))
+        # self.pb_toggle.setText(QtWidgets.QApplication.translate("MainWindow", "toggle", None))
+        # self.pb_edit.setText(QtWidgets.QApplication.translate("MainWindow", "edit", None))
+        # self.pb_debug.setText(QtWidgets.QApplication.translate("MainWindow", "debug", None))
+        # self.cb_create.setText(QtWidgets.QApplication.translate("MainWindow", "create", None))
+        # self.lbl_audio.setText(QtWidgets.QApplication.translate("MainWindow", "audio: ", None))
+        # self.pb_play.setText(QtWidgets.QApplication.translate("MainWindow", "play", None))
+        # self.pb_stop.setText(QtWidgets.QApplication.translate("MainWindow", "stop", None))
+        # self.pb_seek.setText(QtWidgets.QApplication.translate("MainWindow", "seek", None))
+        # self.lbl_audio_position.setText(QtWidgets.QApplication.translate("MainWindow", "position:", None))
+        self.lbl_followSound.setText(QtWidgets.QApplication.translate(
+            "MainWindow", "follow sound", None))
+        # self.lbl_zoom.setText(QtWidgets.QApplication.translate("MainWindow", " Vertical zoom: 1x", None))
+        self.lbl_playbackSpeed.setText(QtWidgets.QApplication.translate(
+            "MainWindow", "playback speed:", None))
+        self.lbl_specType.setText(QtWidgets.QApplication.translate(
+            "MainWindow", "spectrogram range", None))
+        self.lbl_labelType.setText(QtWidgets.QApplication.translate(
+            "MainWindow", "active label", None))
+        self.cb_specType.setItemText(
+            0, QtWidgets.QApplication.translate("MainWindow", "audible", None))
+        self.cb_specType.setItemText(
+            1, QtWidgets.QApplication.translate("MainWindow", "ultra sonic", None))
+        self.lbl_spec_create.setText(
+            QtWidgets.QApplication.translate("MainWindow", "create", None))
+        self.lbl_spec_modify.setText(
+            QtWidgets.QApplication.translate("MainWindow", "modify", None))
+        self.menuFile.setTitle(
+            QtWidgets.QApplication.translate("MainWindow", "File", None))
+        self.actionOpen_folder.setText(
+            QtWidgets.QApplication.translate("MainWindow", "Open folder", None))
+        self.actionClass_settings.setText(
+            QtWidgets.QApplication.translate("MainWindow", "Class settings", None))
+        self.actionExport_settings.setText(
+            QtWidgets.QApplication.translate("MainWindow", "export settings", None))
+        self.actionImport_settings.setText(
+            QtWidgets.QApplication.translate("MainWindow", "import settings", None))
 
 
-class SmallEdit(QtGui.QTextEdit):
+class SmallEdit(QtWidgets.QTextEdit):
     def __init__(self, *args, **kwargs):
         super(SmallEdit, self).__init__(*args, **kwargs)
 
     def sizeHint(self):
-        return (10,10)
+        return QtCore.QSize(10, 10)
 
 
-class SVGButton(QtGui.QPushButton):
+class SVGButton(QtWidgets.QPushButton):
     def __init__(self, svgPath=None, *args, **kwargs):
         super(SVGButton, self).__init__(*args, **kwargs)
-        self.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Preferred)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                           QtWidgets.QSizePolicy.Preferred)
         self.icon = None
 
-        self.centralWidget = QtGui.QWidget(self)
+        self.centralWidget = QtWidgets.QWidget(self)
         self.setFlat(True)
-        self.setContentsMargins(0,0,0,0)
+        self.setContentsMargins(0, 0, 0, 0)
         self.setFixedSize(20, 20)
 
         if svgPath is not None:
             self.load(svgPath)
-
 
     def load(self, svgPath):
         if self.icon is None:
@@ -354,9 +379,9 @@ class SVGButton(QtGui.QPushButton):
         else:
             self.icon.load(svgPath)
 
-        self.layoutBase = QtGui.QHBoxLayout(self)
+        self.layoutBase = QtWidgets.QHBoxLayout(self)
         self.layoutBase.setSpacing(0)
-        self.layoutBase.setContentsMargins(0,0,0,0)
+        self.layoutBase.setContentsMargins(0, 0, 0, 0)
         self.layoutBase.addWidget(self.icon)
 
     def resizeEvent(self, event):
@@ -368,8 +393,8 @@ class SVGButton(QtGui.QPushButton):
     @staticmethod
     def getIconFolder():
         iconFolder = os.path.join(
-                            os.path.dirname(os.path.abspath(__file__)),
-                            os.path.pardir,
-                            'icons')
+            os.path.dirname(os.path.abspath(__file__)),
+            os.path.pardir,
+            'icons')
 
         return iconFolder

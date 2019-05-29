@@ -1,13 +1,13 @@
-import sys
 import copy
+import sys
+
 import numpy as np
+from PySide2 import QtCore, QtGui, QtWidgets
 
-from PySide import QtCore, QtGui
 
-class Test(QtGui.QMainWindow):
+class Test(QtWidgets.QMainWindow):
     def __init__(self):
         super(Test, self).__init__()
-
 
         self.setupUi(self)
         self.setupGV()
@@ -22,23 +22,22 @@ class Test(QtGui.QMainWindow):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
-        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gv_center = QtGui.QGraphicsView(self.centralwidget)
         self.gv_center.setGeometry(QtCore.QRect(100, 60, 561, 331))
         self.gv_center.setObjectName("gv_center")
-        self.pb_debug = QtGui.QPushButton(self.centralwidget)
+        self.pb_debug = QtWidgets.QPushButton(self.centralwidget)
         self.pb_debug.setGeometry(QtCore.QRect(540, 500, 94, 24))
         self.pb_debug.setObjectName("pb_debug")
         self.pb_debug.setText("push !")
         MainWindow.setCentralWidget(self.centralwidget)
 
-
     def connectElements(self):
         self.pb_debug.clicked.connect(self.buttonClick)
 
     def setupGV(self):
-        self.overviewScene = QtGui.QGraphicsScene(self)
+        self.overviewScene = QtWidgets.QGraphicsScene(self)
         # self.overviewScene.setSceneRect(0, -0.5,1, 7)
 
         self.gv_center.setScene(self.overviewScene)
@@ -46,11 +45,11 @@ class Test(QtGui.QMainWindow):
 
     def setupLabelMenu(self):
 
-        wa = QtGui.QWidgetAction(self)
+        wa = QtWidgets.QWidgetAction(self)
         self.cle = ContextLineEdit(wa, self)
         wa.setDefaultWidget(self.cle)
 
-        self.menu = QtGui.QMenu(self)
+        self.menu = QtWidgets.QMenu(self)
         delAction = self.menu.addAction("delete")
         self.menu.addAction(wa)
 
@@ -58,12 +57,12 @@ class Test(QtGui.QMainWindow):
         wa.triggered.connect(self.lineEditChanged)
 
     def deleteLabel(self):
-        print "deleteLabel", self.lastLabelRectContext
+        print("deleteLabel: " + self.lastLabelRectContext)
 
     def lineEditChanged(self):
-        print "lineEditChanged", self.lastLabelRectContext
+        print("lineEditChanged: " + self.lastLabelRectContext)
         self.menu.hide()
-        print self.cle.text()
+        print(self.cle.text())
 
     def registerLastLabelRectContext(self, labelRect):
         self.lastLabelRectContext = labelRect
@@ -73,18 +72,15 @@ class Test(QtGui.QMainWindow):
         self.overviewScene.addLine(-5, self.rectY + 1, 5, self.rectY + 1, QtGui.QPen(QtGui.QColor(255, 0, 0)))
         self.overviewScene.addLine(-5, 0, 5, 0, QtGui.QPen(QtGui.QColor(0, 255, 0)))
 
-
-        self.rect = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test")#lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        self.rect = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test")  # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
         self.rect.setRect(0, self.rectY, 100, 100)
         self.rect.setColor(QtCore.Qt.darkRed)
         self.overviewScene.addItem(self.rect)
 
-
-        self.rect2 = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test2")#lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        self.rect2 = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test2")  # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
         self.rect2.setRect(0, self.rectY, 100, 100)
         self.rect2.setColor(QtCore.Qt.darkBlue)
         self.overviewScene.addItem(self.rect2)
-
 
     def buttonClick(self):
         newHeight = np.random.randint(1, 10)
@@ -98,30 +94,28 @@ class Test(QtGui.QMainWindow):
         # self.normalizeSubplot(self.rect, newHeight, self.rectY)
 
 
-
-class AutoCompleteLineEdit(QtGui.QLineEdit):
+class AutoCompleteLineEdit(QtWidgets.QLineEdit):
     def __init__(self, *args, **kwargs):
         super(AutoCompleteLineEdit, self).__init__(*args, **kwargs)
-        self.comp = QtGui.QCompleter([""], self)
+        self.comp = QtWidgets.QCompleter([""], self)
         self.comp.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.setCompleter(self.comp)#
+        self.setCompleter(self.comp)
         self.setModel(["hallo", "world", "we", "are"])
 
     def setModel(self, strList):
         self.comp.model().setStringList(strList)
 
 
-
-class ContextLineEdit(QtGui.QWidget):
+class ContextLineEdit(QtWidgets.QWidget):
     def __init__(self, action, *args, **kwargs):
         super(ContextLineEdit, self).__init__(*args, **kwargs)
         self.action = action
 
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setText("change label to ")
         self.autoCompeleteLineEdit = AutoCompleteLineEdit(self)
 
-        self.layout = QtGui.QHBoxLayout()
+        self.layout = QtWidgets.QHBoxLayout()
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.autoCompeleteLineEdit)
 
@@ -136,10 +130,12 @@ class ContextLineEdit(QtGui.QWidget):
         self.autoCompeleteLineEdit.setModel(strList)
 
 # special GraphicsRectItem that is aware of its position and does something if the position is changed
-class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
+
+
+class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
     def __init__(self, callback=None, rectChangedCallback=None, *args, **kwargs):
         super(ResizeableGraphicsRectItem, self).__init__(*args, **kwargs)
-        self.setFlags(QtGui.QGraphicsItem.ItemIsMovable | QtGui.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         self.callback = callback
@@ -152,7 +148,7 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         self.setupResizeBox()
 
     def setupResizeBox(self):
-        self.resizeBox = QtGui.QGraphicsRectItem(self)
+        self.resizeBox = QtWidgets.QGraphicsRectItem(self)
         self.resizeBox.setRect(self.rect().x(), self.rect().y(), 0, 0)
         self.resizeBoxPenWidth = 0
         penColor = copy.copy(self.resizeBoxColor)
@@ -161,34 +157,34 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         pen.setWidthF(self.resizeBoxPenWidth)
         self.resizeBox.setPen(pen)
         self.resizeBox.setBrush(QtGui.QBrush(self.resizeBoxColor))
-        self.resizeBox.setFlag(QtGui.QGraphicsItem.ItemStacksBehindParent, True)
+        self.resizeBox.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
     def setResizeBoxColor(self, color):
         self.resizeBoxColor = color
         self.setupResizeBox()
 
     def itemChange(self, change, value):
-        if change == QtGui.QGraphicsItem.ItemPositionChange and self.callback:
+        if change == QtWidgets.QGraphicsItem.ItemPositionChange and self.callback:
             self.callback(value)
 
         return super(ResizeableGraphicsRectItem, self).itemChange(change, value)
 
     def activate(self):
         self.activated = True
-        self.setFlags(QtGui.QGraphicsItem.ItemIsMovable | QtGui.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def deactivate(self):
         self.activated = False
-        self.setFlags(QtGui.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCursor(QtCore.Qt.ArrowCursor)
 
     def contextMenuEvent(self, event):
-        wa = QtGui.QWidgetAction(self.parent)
+        wa = QtWidgets.QWidgetAction(self.parent)
         self.cle = ContextLineEdit(self.parent)
         wa.setDefaultWidget(self.cle)
 
-        menu = QtGui.QMenu(self.parent)
+        menu = QtWidgets.QMenu(self.parent)
         menu.addAction("test")
         menu.addAction(wa)
         menu.exec_(event.screenPos())
@@ -273,7 +269,7 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         self.resizeBox.setVisible(False)
 
     def mouseCloseToTop(self, y):
-        return  y < self.rect().height() / 5
+        return y < self.rect().height() / 5
 
     def mouseCloseToBottom(self, y):
         return y > self.rect().height() - self.rect().height() / 5
@@ -285,17 +281,16 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         return x > self.rect().width() - self.rect().width() / 5
 
     def mouseCloseToUpperLeftCorner(self, x, y):
-        return  self.mouseCloseToTop(y) and self.mouseCloseToLeft(x)
+        return self.mouseCloseToTop(y) and self.mouseCloseToLeft(x)
 
     def mouseCloseToUpperRightCorner(self, x, y):
-        return  self.mouseCloseToTop(y) and self.mouseCloseToRight(x)
+        return self.mouseCloseToTop(y) and self.mouseCloseToRight(x)
 
     def mouseCloseToLowerLeftCorner(self, x, y):
-        return  self.mouseCloseToBottom(y) and self.mouseCloseToLeft(x)
+        return self.mouseCloseToBottom(y) and self.mouseCloseToLeft(x)
 
     def mouseCloseToLowerRightCorner(self, x, y):
-        return  self.mouseCloseToBottom(y) and self.mouseCloseToRight(x)
-
+        return self.mouseCloseToBottom(y) and self.mouseCloseToRight(x)
 
     def hoverMoveEvent(self, event):
         if not self.activated:
@@ -305,16 +300,16 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         x = itemPos.x() - self.rect().x()
         y = itemPos.y() - self.rect().y()
 
-        if self.mouseCloseToUpperLeftCorner(x,y):
+        if self.mouseCloseToUpperLeftCorner(x, y):
             self.activateResizeTopLeft(x, y)
 
-        elif self.mouseCloseToUpperRightCorner(x,y):
+        elif self.mouseCloseToUpperRightCorner(x, y):
             self.activateResizeTopRight(x, y)
 
-        elif self.mouseCloseToLowerLeftCorner(x,y):
+        elif self.mouseCloseToLowerLeftCorner(x, y):
             self.activateResizeBottomLeft(x, y)
 
-        elif self.mouseCloseToLowerRightCorner(x,y):
+        elif self.mouseCloseToLowerRightCorner(x, y):
             self.activateResizeBottomRight(x, y)
 
         elif self.mouseCloseToTop(y):
@@ -395,16 +390,16 @@ class ResizeableGraphicsRectItem(QtGui.QGraphicsRectItem):
         y = itemPos.y() - self.rect().y()
 
         if self.resizeActivated:
-            if self.mouseCloseToUpperLeftCorner(x,y):
+            if self.mouseCloseToUpperLeftCorner(x, y):
                 self.resizeFunction = self.resizeTopLeft
 
-            elif self.mouseCloseToUpperRightCorner(x,y):
+            elif self.mouseCloseToUpperRightCorner(x, y):
                 self.resizeFunction = self.resizeTopRight
 
-            elif self.mouseCloseToLowerLeftCorner(x,y):
+            elif self.mouseCloseToLowerLeftCorner(x, y):
                 self.resizeFunction = self.resizeBottomLeft
 
-            elif self.mouseCloseToLowerRightCorner(x,y):
+            elif self.mouseCloseToLowerRightCorner(x, y):
                 self.resizeFunction = self.resizeBottomRight
 
             elif self.mouseCloseToTop(y):
@@ -450,11 +445,11 @@ class InfoRectItem(ResizeableGraphicsRectItem):
         self.infoString = None
         self.setInfoString(infoString)
 
-        self.setColor(QtGui.QColor(255,0,0))
+        self.setColor(QtGui.QColor(255, 0, 0))
 
     def setupInfoTextItem(self, fontSize):
         if self.infoTextItem is None:
-            self.infoTextItem = QtGui.QGraphicsSimpleTextItem(self)
+            self.infoTextItem = QtWidgets.QGraphicsSimpleTextItem(self)
 
         self.infoTextItem.setVisible(False)
         if fontSize:
@@ -499,6 +494,7 @@ class InfoRectItem(ResizeableGraphicsRectItem):
         super(InfoRectItem, self).setRect(*args, **kwargs)
         self.infoTextItem.setPos(self.rect().x() + self.rect().width() + 10, self.rect().y())
 
+
 class LabelRectItem(InfoRectItem):
     def __init__(self, menu, contextRegisterCallback, *args, **kwargs):
         super(LabelRectItem, self).__init__(*args, **kwargs)
@@ -515,7 +511,7 @@ class LabelRectItem(InfoRectItem):
         self.menu.exec_(event.screenPos())
 
 
-class MouseInsideFilterObj(QtCore.QObject):#And this one
+class MouseInsideFilterObj(QtCore.QObject):  # And this one
     def __init__(self, enterCallback, leaveCallback):
         QtCore.QObject.__init__(self)
         self.enterCallback = enterCallback
@@ -531,12 +527,10 @@ class MouseInsideFilterObj(QtCore.QObject):#And this one
         return True
 
 
-
 if __name__ == "__main__":
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     w = Test()
 
     sys.exit(app.exec_())
-
