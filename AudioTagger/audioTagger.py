@@ -363,7 +363,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             settings.setValue("label." + str(i) + ".name", label["name"])
             settings.setValue("label." + str(i) + ".color", label["color"])
             settings.setValue("label." + str(i) +
-                              ".shortcut", label["shortcut"])
+                              ".keyseq", label["keyseq"])
         settings.endGroup()
         # settings.setValue("labelTypes", labelTypes)
         # settings.setValue("keySequences", keySequences)
@@ -384,10 +384,12 @@ class AudioTagger(QtWidgets.QMainWindow):
             name = settings.value("label." + str(i) + ".name", None)
             if not name:
                 break
+            label["name"] = name
             label["color"] = settings.value("label." + str(i) + ".color", None)
-            label["shortcut"] = settings.value(
-                "label." + str(i) + ".shortcut", i)
+            label["keyseq"] = settings.value(
+                "label." + str(i) + ".keyseq", i)
             res.append(label)
+            i += 1
         settings.endGroup()
         self.labels = res
 
@@ -443,7 +445,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.shortcuts += [QtWidgets.QShortcut(keySequence, self, func)]
 
     def updateShortcuts(self):
-        keySequences = [label["shortcut"] for label in self.labels]
+        keySequences = [label["keyseq"] for label in self.labels]
         for idx, keySequence in enumerate(keySequences):
             if idx < len(self.shortcuts) - 1:
                 self.shortcuts[idx].setKey(keySequence)
@@ -477,6 +479,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.updateShortcuts()
 
     def updateSettings(self, labels):
+        self.labels = [label for label in labels if label["name"]]
+        print(self.labels)
         self.update_labels_Ui()
         self.saveSettingsLocal()
 
@@ -504,8 +508,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.resetView()
         self.updateViews()
 
-    def get_label_names(self)
-    return [label["name"] for label in self.labels]
+    def get_label_names(self):
+        return [label["name"] for label in self.labels]
 
     def get_label_color(self, label_name):
         for label in self.labels:
