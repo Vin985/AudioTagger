@@ -99,7 +99,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
         self.scrollView.verticalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
-        # self.installEventFilter(self.KeyboardFilter)
+        self.installEventFilter(self.KeyboardFilter)
 
         self.shortcuts = []
         self.defineShortcuts()
@@ -180,7 +180,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.pb_stop.clicked.connect(self.stopSound)
         self.ui.pb_seek.clicked.connect(self.activateSoundSeeking)
         self.ui.cb_file.activated.connect(self.selectFromFilelist)
-        # self.ui.cb_create.toggled.connect(self.toogleCreateMode)
         self.ui.cb_playbackSpeed.activated.connect(self.selectPlaybackSpeed)
         self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
 
@@ -189,7 +188,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.actionClass_settings.triggered.connect(self.openClassSettings)
         self.ui.actionExport_settings.triggered.connect(self.exportSettings)
 
-        self.ui.pb_toggle_create.clicked.connect(self.toogleCreateMode)
+        self.ui.pb_toggle_create.clicked.connect(self.toggleCreateMode)
 
     def configureElements(self):
         self.scrollView.setSizePolicy(
@@ -223,12 +222,11 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         self.overviewScene.installEventFilter(self.mouseEventFilter)
 
-    def zoom(self, scale):
+    def zoom(self, scale, scenePos=None):
         self.yscale *= scale
         self.scrollView.scale(scale, scale)
-        if self.mouse_scene_x and self.mouse_scene_y:
-            self.scrollView.centerOn(QtCore.QPointF(
-                self.mouse_scene_x, self.mouse_scene_y))
+        if scenePos:
+            self.scrollView.centerOn(scenePos)
 
         # self.ui.lbl_zoom.setText("Vertical zoom: {0:.1f}x".format(self.yscale))
         # self.setZoomBoundingBox()
@@ -321,19 +319,15 @@ class AudioTagger(QtWidgets.QMainWindow):
             if lr:
                 lr.activate()
 
-    def toogleCreateMode(self):
+    def toggleCreateMode(self):
         if not self.createOn:
             self.createOn = True
-            # self.ui.pb_toggle_create.load(
-            #     self.ui.pb_toggle_create.getIconFolder() + "/fa-toggle-on.svg")
             self.deactivateAllLabelRects()
         else:
             self.createOn = False
-            # self.ui.pb_toggle_create.load(
-            #     self.ui.pb_toggle_create.getIconFolder() + "/fa-toggle-off.svg")
             self.activateAllLabelRects()
 
-        self.toogleTo(None)
+        self.toggleTo(None)
 
     def labelRectChangedSlot(self):
         self.contentChanged = True
@@ -342,20 +336,6 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def saveSettingsLocal(self):
         print("saveSettingsLocal")
-        # labelTypes = []
-        # while True:
-        #     try:
-        #         k, c = self.labelTypes.popitem(last=False)
-        #         labelTypes += [[k, c]]
-        #     except KeyError:
-        #         break
-        #
-        # for k, c in labelTypes:
-        #     self.labelTypes[k] = c
-        #
-        # keySequences = []
-        # for shortcut in self.shortcuts:
-        #     keySequences += [shortcut.key()]
 
         settings = QtCore.QSettings()
         settings.beginGroup("labels")
@@ -365,8 +345,6 @@ class AudioTagger(QtWidgets.QMainWindow):
             settings.setValue("label." + str(i) +
                               ".keyseq", label["keyseq"])
         settings.endGroup()
-        # settings.setValue("labelTypes", labelTypes)
-        # settings.setValue("keySequences", keySequences)
 
     def saveFoldersLocal(self):
         settings = QtCore.QSettings()
@@ -392,17 +370,6 @@ class AudioTagger(QtWidgets.QMainWindow):
             i += 1
         settings.endGroup()
         self.labels = res
-
-        # lt = settings.value("labelTypes")
-        # if lt is None:
-        #     # no settings found
-        #     return
-        #
-        # self.labelTypes = OrderedDict()
-        # for k, i in lt:
-        #     self.labelTypes[k] = i
-        #
-        # keySequences = settings.value("keySequences")
 
         if settings.value("fileIdx") is None:
             self.fileidx = 0
@@ -602,7 +569,8 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def loadSound(self, wavfile):
         self.s4p.loadWav(wavfile)
-        self.s4p.changePlaybackSpeed(self.soundSpeed)
+        if self.soundSpeed != 1:
+            self.s4p.changePlaybackSpeed(self.soundSpeed)
 
     ################### WAV FILE LOAD  ######################
 
@@ -779,7 +747,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         clrSpec = np.rot90(clrSpec, 1)
         # clrSpec = spmisc.imresize(clrSpec, 0.25)
         # converting from numpy array to qt image
-        qi = qim2np.array2qimage(clrSpec)
+        qi = qim2np.array2qimage(clrSpec, True)
         self.setBackgroundImage(qi)
 
     def setBackgroundImage(self, qi):
@@ -884,15 +852,14 @@ class AudioTagger(QtWidgets.QMainWindow):
             if not self.mouseInOverview \
                     or not self.tracker.active:
                 self.openSceneRectangle(x, y)
-                self.isRectangleOpen = True
 
         else:
             self.mouseEventFilter.isRectangleOpen = False
-            self.toogleToItem(self.overviewScene.itemAt(scenePos, QtGui.QTransform()),
+            self.toggleToItem(self.overviewScene.itemAt(scenePos, QtGui.QTransform()),
                               centerOnActiveLabel=False)
 
-    def releaseInScene(self):
-        self.closeSceneRectangle()
+    def releaseInScene(self, scenePos):
+        self.closeSceneRectangle(scenePos)
         self.isRectangleOpen = False
 
     def openSceneRectangle(self, x, y):
@@ -927,8 +894,16 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.rectOrgX = x
         self.rectOrgY = y
 
-    def closeSceneRectangle(self):
-        self.labelRects.append(self.labelRect)
+        self.isRectangleOpen = True
+
+    def closeSceneRectangle(self, scenePos):
+        x = int(scenePos.x())
+        y = int(scenePos.y())
+        # Do not create an annotation if it is a single click
+        if x == self.rectOrgX and y == self.rectOrgY:
+            self.overviewScene.removeItem(self.labelRect)
+        else:
+            self.labelRects.append(self.labelRect)
         self.labelRect = None
         self.contentChanged = True
         self.rectOrgX = None
@@ -1216,12 +1191,12 @@ class AudioTagger(QtWidgets.QMainWindow):
             if activeLabel is None:
                 activeLabel = 0
 
-        self.toogleTo(activeLabel)
+        self.toggleTo(activeLabel)
 
     def toggleToLast(self):
-        self.toogleTo(len(self.labelRects) - 1)
+        self.toggleTo(len(self.labelRects) - 1)
 
-    def toogleTo(self, activeLabel, centerOnActiveLabel=True):
+    def toggleTo(self, activeLabel, centerOnActiveLabel=True):
         if self.activeLabel is not None:
             penCol = self.get_label_color(
                 self.rectClasses[self.labelRects[self.activeLabel]])
@@ -1242,9 +1217,9 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.scrollView.centerOn(self.labelRects[self.activeLabel])
             self.setZoomBoundingBox()
 
-    def toogleToItem(self, item, centerOnActiveLabel=True):
+    def toggleToItem(self, item, centerOnActiveLabel=True):
         itemIdx = self.labelRects.index(item)
-        self.toogleTo(itemIdx, centerOnActiveLabel)
+        self.toggleTo(itemIdx, centerOnActiveLabel)
 
     def deteleActiveLabel(self):
         if self.activeLabel is None:
@@ -1369,7 +1344,7 @@ class MouseFilterObj(QtCore.QObject):  # And this one
 
         if event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
             if event.button() == QtCore.Qt.LeftButton:
-                self.parent.releaseInScene()
+                self.parent.releaseInScene(event.scenePos())
             # self.isRectangleOpen = not self.isRectangleOpen
             elif event.button() == QtCore.Qt.MiddleButton:
                 self.parent.seekSound(event.scenePos().x())
@@ -1386,16 +1361,16 @@ class MouseFilterObj(QtCore.QObject):  # And this one
         if event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
             self.parent.show_position(event.scenePos())
             if self.parent.isRectangleOpen:
-                if event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
-                    self.parent.resizeSceneRectangle(int(event.scenePos().x()),
-                                                     int(event.scenePos().y()))
+                self.parent.resizeSceneRectangle(int(event.scenePos().x()),
+                                                 int(event.scenePos().y()))
 
         if event.type() == QtCore.QEvent.GraphicsSceneWheel:
-            if (event.modifiers() & QtCore.Qt.CTRL):
+            if event.modifiers() & QtCore.Qt.CTRL:
                 if event.delta() > 0:
-                    self.parent.zoom(1.1)
+                    self.parent.zoom(1.1, event.scenePos())
                 else:
-                    self.parent.zoom(0.9)
+                    self.parent.zoom(0.9, event.scenePos())
+                event.setAccepted(True)
                 return True
 
         return False
@@ -1409,18 +1384,29 @@ class KeyboardFilterObj(QtCore.QObject):
     def eventFilter(self, obj, event):
         # print event.type()
         if event.type() == QtCore.QEvent.KeyPress:
+            print("key pressed")
             if event.key() == QtCore.Qt.Key_Tab:
                 self.parent.toggleLabels()
             elif event.key() == QtCore.Qt.Key_Left:
                 self.parent.loadPrev()
             elif event.key() == QtCore.Qt.Key_Right:
                 self.parent.loadNext()
+            elif event.key() == QtCore.Qt.Key_Shift:
+                print("alt pressed")
+                if self.parent.createOn:
+                    self.parent.toggleCreateMode()
 
             else:
                 print(event.key())
-
+        elif event.type() == QtCore.QEvent.KeyRelease:
+            if event.key() == QtCore.Qt.Key_Shift:
+                if not self.parent.createOn:
+                    self.parent.toggleCreateMode()
+        return False
 
 # special GraphicsRectItem that is aware of its position and does something if the position is changed
+
+
 class MovableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
     """ from http://stackoverflow.com/a/24757931/2156909
     """

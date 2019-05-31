@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from AudioTagger.classDialog_auto import Ui_Dialog
+from AudioTagger.classdialog_ui import Ui_Dialog
 
 
 class ClassDialog(QtWidgets.QDialog):
@@ -49,7 +49,7 @@ class ClassDialog(QtWidgets.QDialog):
         if not label:
             name = ""
             color.setRgb(255, 0, 127)
-            keyseq = self.label_count
+            keyseq = int(QtCore.Qt.Key_0) + self.label_count + 1
         else:
             name = label["name"]
             color = color.fromRgb(int(label["color"]))
@@ -76,7 +76,7 @@ class ClassDialog(QtWidgets.QDialog):
         klabel.setObjectName("lbl_keyseq_" + label_id)
 
         # TODO: looks fishy... doesnt use the loaded value
-        keySeq = QtGui.QKeySequence(int(QtCore.Qt.Key_0) + self.label_count)
+        keySeq = QtGui.QKeySequence(keyseq)
 
         keyEdit = KeySequenceEdit(keySeq, self)
         keyEdit.setObjectName("input_keyseq_" + label_id)
@@ -105,9 +105,9 @@ class ClassDialog(QtWidgets.QDialog):
         self.label_count += 1
         self.creatingNewLabelSet = False
 
-        self.ui.scrollArea.viewport().updateGeometry()
-        self.ui.scrollArea.viewport().update()
-        self.ui.scrollArea.updateGeometry()
+        # self.ui.scrollArea.viewport().updateGeometry()
+        # self.ui.scrollArea.viewport().update()
+        # self.ui.scrollArea.updateGeometry()
 
     def selectColor(self, idx):
         color = QtWidgets.QColorDialog.getColor()

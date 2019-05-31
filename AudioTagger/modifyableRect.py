@@ -68,16 +68,23 @@ class Test(QtWidgets.QMainWindow):
         self.lastLabelRectContext = labelRect
 
     def initRect(self):
-        self.overviewScene.addLine(-5, self.rectY, 5, self.rectY, QtGui.QPen(QtGui.QColor(255, 0, 0)))
-        self.overviewScene.addLine(-5, self.rectY + 1, 5, self.rectY + 1, QtGui.QPen(QtGui.QColor(255, 0, 0)))
-        self.overviewScene.addLine(-5, 0, 5, 0, QtGui.QPen(QtGui.QColor(0, 255, 0)))
+        self.overviewScene.addLine(-5, self.rectY, 5,
+                                   self.rectY, QtGui.QPen(QtGui.QColor(255, 0, 0)))
+        self.overviewScene.addLine(-5, self.rectY + 1, 5,
+                                   self.rectY + 1, QtGui.QPen(QtGui.QColor(255, 0, 0)))
+        self.overviewScene.addLine(-5, 0, 5, 0,
+                                   QtGui.QPen(QtGui.QColor(0, 255, 0)))
 
-        self.rect = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test")  # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        self.rect = LabelRectItem(
+            self.menu, self.registerLastLabelRectContext, "test")
         self.rect.setRect(0, self.rectY, 100, 100)
         self.rect.setColor(QtCore.Qt.darkRed)
         self.overviewScene.addItem(self.rect)
 
-        self.rect2 = LabelRectItem(self.menu, self.registerLastLabelRectContext, "test2")  # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
+        self.rect2 = LabelRectItem(
+            self.menu, self.registerLastLabelRectContext, "test2")
         self.rect2.setRect(0, self.rectY, 100, 100)
         self.rect2.setColor(QtCore.Qt.darkBlue)
         self.overviewScene.addItem(self.rect2)
@@ -135,7 +142,8 @@ class ContextLineEdit(QtWidgets.QWidget):
 class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
     def __init__(self, callback=None, rectChangedCallback=None, *args, **kwargs):
         super(ResizeableGraphicsRectItem, self).__init__(*args, **kwargs)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         self.callback = callback
@@ -157,7 +165,8 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
         pen.setWidthF(self.resizeBoxPenWidth)
         self.resizeBox.setPen(pen)
         self.resizeBox.setBrush(QtGui.QBrush(self.resizeBoxColor))
-        self.resizeBox.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
+        self.resizeBox.setFlag(
+            QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
     def setResizeBoxColor(self, color):
         self.resizeBoxColor = color
@@ -171,10 +180,12 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
 
     def activate(self):
         self.activated = True
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def deactivate(self):
+        self.deactivateResize()
         self.activated = False
         self.setFlags(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCursor(QtCore.Qt.ArrowCursor)
@@ -202,14 +213,14 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
         self.drawResizeBox(0,
                            0,
                            self.rect().width(),
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeVerCursor)
 
     def activateResizeBottom(self, y):
         self.drawResizeBox(0,
-                           self.rect().height() - self.rect().height()/5.0,
+                           self.rect().height() - self.rect().height() / 5.0,
                            self.rect().width(),
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeVerCursor)
 
     def activateResizeLeft(self, x):
@@ -230,35 +241,35 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
         self.drawResizeBox(0,
                            0,
                            self.rect().width() / 5.0,
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeFDiagCursor)
 
     def activateResizeTopRight(self, x, y):
         self.drawResizeBox(self.rect().width() - self.rect().width() / 5.0,
                            0,
                            self.rect().width() / 5.0,
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeBDiagCursor)
 
     def activateResizeBottomLeft(self, x, y):
         self.drawResizeBox(0,
-                           self.rect().height() - self.rect().height()/5.0,
+                           self.rect().height() - self.rect().height() / 5.0,
                            self.rect().width() / 5.0,
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeBDiagCursor)
 
     def activateResizeBottomRight(self, x, y):
         self.drawResizeBox(self.rect().width() - self.rect().width() / 5.0,
-                           self.rect().height() - self.rect().height()/5.0,
+                           self.rect().height() - self.rect().height() / 5.0,
                            self.rect().width() / 5.0,
-                           self.rect().height()/5.0)
+                           self.rect().height() / 5.0)
         self.setCursor(QtCore.Qt.SizeFDiagCursor)
 
     def activateMove(self):
         self.drawResizeBox(self.rect().width() / 5.0,
-                           self.rect().height()/5.0,
+                           self.rect().height() / 5.0,
                            self.rect().width() - 2 * self.rect().width() / 5.0,
-                           self.rect().height() - 2 * self.rect().height()/5.0)
+                           self.rect().height() - 2 * self.rect().height() / 5.0)
 
         self.activate()
         self.resizeActivated = False
@@ -458,7 +469,8 @@ class InfoRectItem(ResizeableGraphicsRectItem):
             self.infoTextFont = QtGui.QFont('', 120)
 
         self.infoTextItem.setFont(self.infoTextFont)
-        self.infoTextItem.setPos(self.rect().x() + self.rect().width() + 10, self.rect().y())
+        self.infoTextItem.setPos(
+            self.rect().x() + self.rect().width() + 10, self.rect().y())
 
     def setColor(self, color):
         self.setPen(QtGui.QPen(color))
@@ -488,11 +500,13 @@ class InfoRectItem(ResizeableGraphicsRectItem):
             return
 
         super(InfoRectItem, self).mouseMoveEvent(event)
-        self.infoTextItem.setPos(self.rect().x() + self.rect().width() + 10, self.rect().y())
+        self.infoTextItem.setPos(
+            self.rect().x() + self.rect().width() + 10, self.rect().y())
 
     def setRect(self, *args, **kwargs):
         super(InfoRectItem, self).setRect(*args, **kwargs)
-        self.infoTextItem.setPos(self.rect().x() + self.rect().width() + 10, self.rect().y())
+        self.infoTextItem.setPos(
+            self.rect().x() + self.rect().width() + 10, self.rect().y())
 
 
 class LabelRectItem(InfoRectItem):

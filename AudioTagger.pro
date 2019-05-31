@@ -32,7 +32,8 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui \
-    AudioTagger/gui_mod.ui
+    AudioTagger/gui_mod.ui \
+    AudioTagger/classDialog.ui
 
 RESOURCES += \
     resources.qrc
