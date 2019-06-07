@@ -1,0 +1,14 @@
+1: &id001 !!python/object:__main__.Tag
+  id: 1
+  name: test
+  related: []
+2: &id002 !!python/object:__main__.Tag
+  id: 2
+  name: test2
+  related:
+  - *id001
+3: !!python/object:__main__.Tag
+  id: 3
+  name: test3
+  related:
+  - *id002

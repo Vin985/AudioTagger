@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'classDialog2.ui',
 # licensing of 'classDialog2.ui' applies.
 #
-# Created: Thu Jun  6 15:04:12 2019
+# Created: Fri Jun  7 16:24:08 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(841, 257)
+        Dialog.resize(981, 535)
         self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -27,11 +27,6 @@ class Ui_Dialog(object):
         self.label_5.setText("")
         self.label_5.setObjectName("label_5")
         self.gridLayout.addWidget(self.label_5, 0, 4, 1, 1)
-        self.label = QtWidgets.QLabel(Dialog)
-        self.label.setStyleSheet("font-weight: bold")
-        self.label.setTextFormat(QtCore.Qt.PlainText)
-        self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.label_2 = QtWidgets.QLabel(Dialog)
         self.label_2.setStyleSheet("font-weight: bold")
         self.label_2.setObjectName("label_2")
@@ -44,15 +39,23 @@ class Ui_Dialog(object):
         self.label_3.setStyleSheet("font-weight: bold")
         self.label_3.setObjectName("label_3")
         self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.gridLayout.addLayout(self.horizontalLayout_2, 1, 2, 1, 1)
+        self.label = QtWidgets.QLabel(Dialog)
+        self.label.setStyleSheet("font-weight: bold")
+        self.label.setTextFormat(QtCore.Qt.PlainText)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
+        self.tag_layout = QtWidgets.QVBoxLayout()
+        self.tag_layout.setObjectName("tag_layout")
+        self.widget = TagForm(Dialog)
+        self.widget.setObjectName("widget")
+        self.tag_layout.addWidget(self.widget)
+        self.verticalLayout.addLayout(self.tag_layout)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
-        self.comboBox = QtWidgets.QComboBox(Dialog)
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.verticalLayout.addWidget(self.comboBox)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setContentsMargins(-1, 15, -1, 15)
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -89,14 +92,12 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Dialog", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("Dialog", "Tag name", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "Color", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("Dialog", "Shortcut", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("Dialog", "Related tags", None, -1))
-        self.comboBox.setItemText(0, QtWidgets.QApplication.translate("Dialog", "New Item", None, -1))
-        self.comboBox.setItemText(1, QtWidgets.QApplication.translate("Dialog", "New Item", None, -1))
-        self.comboBox.setItemText(2, QtWidgets.QApplication.translate("Dialog", "New Item", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Dialog", "Tag name", None, -1))
         self.btn_add.setText(QtWidgets.QApplication.translate("Dialog", "  Add new tag", None, -1))
 
 from AudioTagger.selectionListWidget import SelectionListWidget
+from AudioTagger.tag_form import TagForm
 import resources_rc

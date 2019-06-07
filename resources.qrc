@@ -12,5 +12,7 @@
         <file alias="signs">icons/fa-map-signs.svg</file>
         <file alias="save">icons/fa-save.svg</file>
         <file alias="stop">icons/fa-stop.svg</file>
+        <file alias="delete">icons/fa-trash.svg</file>
+        <file alias="add">icons/fa-plus.svg</file>
     </qresource>
 </RCC>

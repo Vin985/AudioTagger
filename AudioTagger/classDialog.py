@@ -7,34 +7,35 @@ from collections import OrderedDict
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from AudioTagger.classdialog_ui import Ui_Dialog
+from AudioTagger.classDialog2 import Ui_Dialog
+
+# from AudioTagger.classdialog_ui import Ui_Dialog
 
 
-class ClassDialog(QtWidgets.QDialog):
+class ClassDialog(QtWidgets.QDialog, Ui_Dialog):
     settingsSig = QtCore.Signal(list)
 
     def __init__(self, parent, labels):
         super(ClassDialog, self).__init__(parent)
-        # Usual setup stuff. Set up the user interface from Designer
-        self.ui = Ui_Dialog()
-        self.ui.setupUi(self)
+        self.setupUi(self)
 
         self.connectSignals()
 
-        self.label_count = 0
+        self.tag_count = 0
         self.labels = labels
         self.creatingNewLabelSet = False
 
-        for label in labels:
-            self.create_label_form(label)
-        self.create_label_form()
+        for tag in labels.tags.values():
+            self.create_label_form(tag)
+        # self.create_label_form()
 
     def getSettings(self):
         self.show()
 
     def connectSignals(self):
-        self.ui.buttonBox.accepted.connect(self.sendSettings)
-        applyButton = self.ui.buttonBox.button(
+        self.buttonBox.accepted.connect(self.sendSettings)
+        self.btn_add.clicked.connect(self.create_label_form)
+        applyButton = self.buttonBox.button(
             QtWidgets.QDialogButtonBox.Apply)
         applyButton.clicked.connect(self.sendSettings)
 
@@ -44,92 +45,128 @@ class ClassDialog(QtWidgets.QDialog):
 
     def create_label_form(self, label=None):
         self.creatingNewLabelSet = True
+        self.tag_count += 1
 
         color = QtGui.QColor()
         if not label:
+            idx = self.labels.next_id
             name = ""
             color.setRgb(255, 0, 127)
-            keyseq = int(QtCore.Qt.Key_0) + self.label_count + 1
+            keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
+            self.labels.add(name, color.rgb(), keyseq)
         else:
-            name = label["name"]
-            color = color.fromRgb(int(label["color"]))
-            keyseq = label["keyseq"]
+            idx = label.id
+            name = label.name
+            color = color.fromRgb(int(label.color))
+            keyseq = label.keyseq
 
-        label_id = str(self.label_count)
+        label_id = str(idx)
 
-        label = QtWidgets.QLabel("Label {0}".format(self.label_count), self)
-        label.setObjectName("lbl_name_" + label_id)
-
+        # Tag name input
         name_input = QtWidgets.QLineEdit(self)
         name_input.setObjectName("input_name_" + label_id)
         name_input.setText(name)
 
-        colourLbl = QtWidgets.QLabel("       ", self)
-        colourLbl.setObjectName("lbl_colour_" + label_id)
-        self.setLabelColor(colourLbl, color)
+        # Color selection button
+        color_btn = QtWidgets.QPushButton(self)
+        pal = color_btn.palette()
+        pal.setColor(QtGui.QPalette.Button, color)
+        color_btn.setPalette(pal)
+        color_btn.setAutoFillBackground(True)
+        color_btn.setText("")
+        color_btn.setObjectName("btn_color_" + label_id)
 
-        button = QtWidgets.QPushButton(self)
-        button.setObjectName("btn_color_" + label_id)
-        button.setText("Select colour")
+        # klabel = QtWidgets.QLabel("Keyboard shortcut: ", self)
+        # klabel.setObjectName("lbl_keyseq_" + label_id)
 
-        klabel = QtWidgets.QLabel("Keyboard shortcut: ", self)
-        klabel.setObjectName("lbl_keyseq_" + label_id)
-
-        # TODO: looks fishy... doesnt use the loaded value
+        # Shortcut input
         keySeq = QtGui.QKeySequence(keyseq)
+        key_input = KeySequenceEdit(keySeq, self)
+        key_input.setObjectName("input_keyseq_" + label_id)
 
-        keyEdit = KeySequenceEdit(keySeq, self)
-        keyEdit.setObjectName("input_keyseq_" + label_id)
+        # Delete button
+        delete_btn = QtWidgets.QPushButton(self)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            delete_btn.sizePolicy().hasHeightForWidth())
+        delete_btn.setSizePolicy(sizePolicy)
+        delete_btn.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/delete"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        delete_btn.setIcon(icon)
+        delete_btn.setFlat(True)
+        delete_btn.setObjectName("delete_btn_" + label_id)
 
-        self.ui.gridLayout.addWidget(label, self.label_count, 0, 1, 1)
-        self.ui.gridLayout.addWidget(name_input, self.label_count, 1, 1, 1)
-        self.ui.gridLayout.addWidget(colourLbl, self.label_count, 2, 1, 1)
-        self.ui.gridLayout.addWidget(button, self.label_count, 3, 1, 1)
-        self.ui.gridLayout.addWidget(klabel, self.label_count, 4, 1, 1)
-        self.ui.gridLayout.addWidget(keyEdit, self.label_count, 5, 1, 1)
+        # self.ui.gridLayout.addWidget(label, self.label_count + 1, 0, 1, 1)
+        self.gridLayout.addWidget(name_input, self.tag_count, 0, 1, 1)
+        self.gridLayout.addWidget(color_btn, self.tag_count, 1, 1, 1)
+        # self.ui.gridLayout.addWidget(klabel, self.label_count + 1, 2, 1, 1)
+        self.gridLayout.addWidget(key_input, self.tag_count, 3, 1, 1)
+        self.gridLayout.addWidget(delete_btn, self.tag_count, 4, 1, 1)
 
-        idx = self.label_count
-        def btnCon(): return self.selectColor(idx)
-        button.clicked.connect(btnCon)
+        # Add connections for each specific button
 
-        def new_name(): return self.lineEditFinished(idx, "name")
+        def new_name():
+            return self.lineEditFinished(idx, "name")
         name_input.editingFinished.connect(new_name)
 
-        def new_keyseq(): return self.lineEditFinished(idx, "keyseq")
-        keyEdit.editingFinished.connect(new_keyseq)
+        def color_clicked():
+            return self.select_color(idx)
+        color_btn.clicked.connect(color_clicked)
 
-        if len(self.labels) <= self.label_count:
-            self.labels.append(
-                {"name": name, "color": color.rgb(), "keyseq": keyseq})
+        def new_keyseq():
+            return self.lineEditFinished(idx, "keyseq")
+        key_input.editingFinished.connect(new_keyseq)
 
-        self.label_count += 1
+        def delete_clicked():
+            return self.delete_tag(idx)
+        delete_btn.clicked.connect(delete_clicked)
+
         self.creatingNewLabelSet = False
+
+        if name:
+            listItem = QtWidgets.QListWidgetItem()
+            listItem.setText(name)
+            self.selection_list.list_src.addItem(listItem)
 
         # self.ui.scrollArea.viewport().updateGeometry()
         # self.ui.scrollArea.viewport().update()
         # self.ui.scrollArea.updateGeometry()
 
-    def selectColor(self, idx):
+    def delete_tag(self, idx):
+        pass
+
+    def select_color(self, idx):
         color = QtWidgets.QColorDialog.getColor()
-        self.setLabelColor(self.findChild(
-            QtWidgets.QLabel, "lbl_colour_" + str(idx)), color)
-        self.labels[idx]["color"] = color.rgb()
+        color_btn = self.findChild(
+            QtWidgets.QPushButton, "btn_color_" + str(idx))
+        pal = color_btn.palette()
+        pal.setColor(QtGui.QPalette.Button, color)
+        color_btn.setPalette(pal)
+        self.labels[idx].color = color.rgb()
 
     def lineEditFinished(self, idx, input):
         value = self.findChild(
             QtWidgets.QLineEdit, "input_" + input + "_" + str(idx)).text()
 
-        self.labels[idx][input] = value
+        # self.labels[idx].getattr(input) = value
+        setattr(self.labels[idx], input, value)
 
-        if input == "name":
-            if idx < self.label_count - 1:
-                return
-
-            if value != "":
-                if not self.creatingNewLabelSet:
-                    self.create_label_form()
+        # if input == "name":
+        #     if idx < self.label_count - 1:
+        #         return
+        #
+        #     if value != "":
+        #         if not self.creatingNewLabelSet:
+        #             self.create_label_form()
 
     def sendSettings(self):
+        self.labels.remove_empty()
+        # labels = [label for label in self.labels if label["name"]]
         self.settingsSig.emit(self.labels)
 
 

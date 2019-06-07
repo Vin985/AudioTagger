@@ -1,0 +1,6 @@
+1: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  id: 1
+  keyseq: '1'
+  name: test
+  related: []

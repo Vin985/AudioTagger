@@ -17,6 +17,7 @@ import AudioTagger.colourMap as CM
 import AudioTagger.modifyableRect as MR
 # from AudioTagger.main_gui import Ui_MainWindow
 from AudioTagger.gui_mod import Ui_MainWindow
+from AudioTagger.tags import Tags
 
 # from PySide import QtCore, QtGui
 
@@ -114,7 +115,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.isRectangleOpen = False
 
         # self.labelTypes = OrderedDict()
-        self.labels = []
+        # self.labels = []
+        self.labels = Tags()
         self.setupLabelMenu()
         if labelTypes is None:
             if not ignoreSettings:
@@ -271,7 +273,7 @@ class AudioTagger(QtWidgets.QMainWindow):
     def setupLabelMenu(self):
         wa = QtWidgets.QWidgetAction(self)
         self.cle = MR.ContextLineEdit(wa, self)
-        self.cle.setModel(self.get_label_names())
+        self.cle.setModel(self.labels.get_names())
 
         wa.setDefaultWidget(self.cle)
 
@@ -301,7 +303,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.menu.hide()
         c = self.cle.text()
 
-        self.lastLabelRectContext.setColor(self.get_label_color(c))
+        self.lastLabelRectContext.setColor(self.labels.get_color(c))
         self.lastLabelRectContext.setInfoString(c)
         self.rectClasses[self.lastLabelRectContext] = c
         self.contentChanged = True
@@ -337,14 +339,15 @@ class AudioTagger(QtWidgets.QMainWindow):
     def saveSettingsLocal(self):
         print("saveSettingsLocal")
 
-        settings = QtCore.QSettings()
-        settings.beginGroup("labels")
-        for i, label in enumerate(self.labels):
-            settings.setValue("label." + str(i) + ".name", label["name"])
-            settings.setValue("label." + str(i) + ".color", label["color"])
-            settings.setValue("label." + str(i) +
-                              ".keyseq", label["keyseq"])
-        settings.endGroup()
+        # settings = QtCore.QSettings()
+        # settings.beginGroup("labels")
+        # for i, label in enumerate(self.labels):
+        #     settings.setValue("label." + str(i) + ".name", label["name"])
+        #     settings.setValue("label." + str(i) + ".color", label["color"])
+        #     settings.setValue("label." + str(i) +
+        #                       ".keyseq", label["keyseq"])
+        # settings.endGroup()
+        self.labels.save("tags.yaml")
 
     def saveFoldersLocal(self):
         settings = QtCore.QSettings()
@@ -353,23 +356,23 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def loadSettingsLocal(self):
         settings = QtCore.QSettings()
-
-        settings.beginGroup("labels")
-        i = 0
-        res = []
-        while True:
-            label = {}
-            name = settings.value("label." + str(i) + ".name", None)
-            if not name:
-                break
-            label["name"] = name
-            label["color"] = settings.value("label." + str(i) + ".color", None)
-            label["keyseq"] = settings.value(
-                "label." + str(i) + ".keyseq", i)
-            res.append(label)
-            i += 1
-        settings.endGroup()
-        self.labels = res
+        self.labels.load("tags.yaml")
+        # settings.beginGroup("labels")
+        # i = 0
+        # res = []
+        # while True:
+        #     label = {}
+        #     name = settings.value("label." + str(i) + ".name", None)
+        #     if not name:
+        #         break
+        #     label["name"] = name
+        #     label["color"] = settings.value("label." + str(i) + ".color", None)
+        #     label["keyseq"] = settings.value(
+        #         "label." + str(i) + ".keyseq", i)
+        #     res.append(label)
+        #     i += 1
+        # settings.endGroup()
+        # self.labels = res
 
         if settings.value("fileIdx") is None:
             self.fileidx = 0
@@ -404,7 +407,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         cd.show()
 
     def changeLabelIdx(self, i):
-        print(i)
         self.ui.cb_labelType.setCurrentIndex(i)
 
     def addKeySequenceToShortcuts(self, keySequence, idx):
@@ -412,7 +414,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.shortcuts += [QtWidgets.QShortcut(keySequence, self, func)]
 
     def updateShortcuts(self):
-        keySequences = [label["keyseq"] for label in self.labels]
+        # keySequences = [label["keyseq"] for label in self.labels]
+        keySequences = self.labels.get_key_sequences()
         for idx, keySequence in enumerate(keySequences):
             if idx < len(self.shortcuts) - 1:
                 self.shortcuts[idx].setKey(keySequence)
@@ -438,7 +441,8 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.ui.cb_labelType.removeItem(0)
 
         # Update combobox with new labels
-        label_names = [label["name"] for label in self.labels]
+        # label_names = [label["name"] for label in self.labels]
+        label_names = self.labels.get_names()
         self.ui.cb_labelType.addItems(label_names)
         self.cle.setModel(label_names)
 
@@ -446,7 +450,9 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.updateShortcuts()
 
     def updateSettings(self, labels):
-        self.labels = [label for label in labels if label["name"]]
+        #self.labels = labels
+        print("in update settings")
+        print(labels)
         print(self.labels)
         self.update_labels_Ui()
         self.saveSettingsLocal()
@@ -475,13 +481,13 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.resetView()
         self.updateViews()
 
-    def get_label_names(self):
-        return [label["name"] for label in self.labels]
+    # def get_label_names(self):
+    #     return [label["name"] for label in self.labels]
 
-    def get_label_color(self, label_name):
-        for label in self.labels:
-            if label["name"] == label_name:
-                return label["color"]
+    # def get_label_color(self, label_name):
+    #     for label in self.labels:
+    #         if label["name"] == label_name:
+    #             return label["color"]
 
     ################### SOUND STUFF #######################
     def updateSoundMarker(self):
@@ -874,7 +880,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         if self.labelRect:
             self.overviewScene.removeItem(self.labelRect)
 
-        penCol = self.get_label_color(self.ui.cb_labelType.currentText())
+        penCol = self.labels.get_color(self.ui.cb_labelType.currentText())
         # self.labelRect = self.overviewScene.addRect(rect, QtGui.QPen(penCol))
 
         self.labelRect = MR.LabelRectItem(self.menu,
@@ -1070,7 +1076,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.specNWinMod = float(l[4])
 
             try:
-                penCol = self.get_label_color(c)
+                penCol = self.labels.get_color(c)
             except KeyError:
                 if c not in self.unconfiguredLabels:
                     msgBox = QtWidgets.QMessageBox()
@@ -1198,7 +1204,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def toggleTo(self, activeLabel, centerOnActiveLabel=True):
         if self.activeLabel is not None:
-            penCol = self.get_label_color(
+            penCol = self.labels.get_color(
                 self.rectClasses[self.labelRects[self.activeLabel]])
             pen = QtGui.QPen(penCol)
             self.labelRects[self.activeLabel].setPen(pen)
