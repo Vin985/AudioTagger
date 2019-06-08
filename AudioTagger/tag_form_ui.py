@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'tag_form.ui',
 # licensing of 'tag_form.ui' applies.
 #
-# Created: Fri Jun  7 16:25:24 2019
+# Created: Fri Jun  7 16:42:19 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,6 +31,7 @@ class Ui_TagForm(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_color.sizePolicy().hasHeightForWidth())
         self.btn_color.setSizePolicy(sizePolicy)
+        self.btn_color.setAutoFillBackground(True)
         self.btn_color.setText("")
         self.btn_color.setObjectName("btn_color")
         self.horizontalLayout.addWidget(self.btn_color)
@@ -50,7 +51,7 @@ class Ui_TagForm(object):
         self.btn_add_related.setFlat(True)
         self.btn_add_related.setObjectName("btn_add_related")
         self.horizontalLayout.addWidget(self.btn_add_related)
-        self.input_keyseq = QtWidgets.QLineEdit(TagForm)
+        self.input_keyseq = KeySequenceEdit(TagForm)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -83,4 +84,5 @@ class Ui_TagForm(object):
         self.input_keyseq.setPlaceholderText(QtWidgets.QApplication.translate("TagForm", "Key shortcut", None, -1))
         self.btn_delete.setToolTip(QtWidgets.QApplication.translate("TagForm", "Delete tag", None, -1))
 
+from AudioTagger.keysequenceedit import KeySequenceEdit
 import resources_rc

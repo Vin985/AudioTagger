@@ -4,3 +4,9 @@
   keyseq: '1'
   name: test
   related: []
+2: !!python/object:AudioTagger.tags.Tag
+  color: 4287291956
+  id: 2
+  keyseq: ''
+  name: toto
+  related: []

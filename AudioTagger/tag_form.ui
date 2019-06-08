@@ -47,6 +47,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
      <property name="text">
       <string/>
      </property>
@@ -83,7 +86,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="input_keyseq">
+    <widget class="KeySequenceEdit" name="input_keyseq">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -120,6 +123,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeySequenceEdit</class>
+   <extends>QLineEdit</extends>
+   <header>AudioTagger/keysequenceedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>
