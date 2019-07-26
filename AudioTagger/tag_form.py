@@ -1,4 +1,5 @@
 from PySide2 import QtGui, QtWidgets
+from PySide2.QtCore import Signal, Slot
 
 from AudioTagger.tag_form_ui import Ui_TagForm
 from AudioTagger.tags import Tag
@@ -6,16 +7,20 @@ from AudioTagger.tags import Tag
 
 class TagForm(QtWidgets.QWidget, Ui_TagForm):
 
-    def __init__(self, parent, tag=None):
+    delete_tag = Signal(int)
+
+    def __init__(self, parent, tag):
         super().__init__(parent)
         self.setupUi(self)
-        color = QtGui.QColor()
-        if not tag:
-            name = ""
-            color.setRgb(255, 0, 127)
-            keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
-            tag = Tag(0, name, color.rgb(), keyseq)
+        # color = QtGui.QColor()
+        # if not tag:
+        #     name = ""
+        #     color.setRgb(255, 0, 127)
+        #     keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
+        #     tag = Tag(0, name, color.rgb(), keyseq)
         self.tag = tag
+        self.setObjectName("tag_" + str(self.tag.id))
+        print(self.objectName())
         self.link_signals()
         self.load_data()
 
@@ -72,4 +77,6 @@ class TagForm(QtWidgets.QWidget, Ui_TagForm):
         return self.lineEditFinished("keyseq")
 
     def delete_clicked(self):
-        pass
+        print("deleting tag")
+        self.delete_tag.emit(self.tag.id)
+        self.setParent(None)

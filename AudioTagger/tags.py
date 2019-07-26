@@ -13,6 +13,9 @@ class Tags:
         self.next_id += 1
         return tag
 
+    def delete(self, id):
+        del self.tags[id]
+
     def __getitem__(self, key):
         print("getting item with key " + str(key))
         return self.tags[key]
