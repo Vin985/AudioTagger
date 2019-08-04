@@ -446,31 +446,23 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
 
 
 class InfoRectItem(ResizeableGraphicsRectItem):
-    def __init__(self, infoString=None, fontSize=None, callback=None, *args, **kwargs):
+    def __init__(self, infoString=None, callback=None, *args, **kwargs):
         super(InfoRectItem, self).__init__(callback, *args, **kwargs)
 
-        self.infoTextItem = None
-        self.infoTextFont = None
-        self.setupInfoTextItem(fontSize)
+        self.infoString = infoString
+        self.infoTextItem = QtWidgets.QGraphicsSimpleTextItem(
+            infoString, parent=self)
 
-        self.infoString = None
-        self.setInfoString(infoString)
-
-        self.setColor(QtGui.QColor(255, 0, 0))
-
-    def setupInfoTextItem(self, fontSize):
-        if self.infoTextItem is None:
-            self.infoTextItem = QtWidgets.QGraphicsSimpleTextItem(self)
-
-        self.infoTextItem.setVisible(False)
-        if fontSize:
-            self.infoTextFont = QtGui.QFont('', fontSize)
-        else:
-            self.infoTextFont = QtGui.QFont('', 120)
-
-        self.infoTextItem.setFont(self.infoTextFont)
         self.infoTextItem.setPos(
-            self.rect().x() + self.rect().width() + 10, self.rect().y())
+            self.rect().x(), self.rect().y() - 20)
+
+    def setupInfoTextItem(self, fontSize=12, color=None):
+        self.infoTextFont = QtGui.QFont('', fontSize)
+        self.infoTextItem.setFont(self.infoTextFont)
+
+        if not color:
+            color = QtGui.QColor(255, 0, 0, 100)
+        self.setColor(color)
 
     def setColor(self, color):
         self.setPen(QtGui.QPen(color))
@@ -478,21 +470,21 @@ class InfoRectItem(ResizeableGraphicsRectItem):
 
     def setInfoString(self, s):
         self.infoString = s
-        if self.infoString:
+        if self.infoString and self.infoTextItem:
             self.infoTextItem.setText(self.infoString)
 
     def hoverEnterEvent(self, event):
         if not self.activated:
             return
 
-        self.infoTextItem.setVisible(True)
+        # self.infoTextItem.setVisible(True)
         super(InfoRectItem, self).hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
         if not self.activated:
             return
 
-        self.infoTextItem.setVisible(False)
+        # self.infoTextItem.setVisible(False)
         super(InfoRectItem, self).hoverLeaveEvent(event)
 
     def mouseMoveEvent(self, event):
@@ -500,13 +492,14 @@ class InfoRectItem(ResizeableGraphicsRectItem):
             return
 
         super(InfoRectItem, self).mouseMoveEvent(event)
-        self.infoTextItem.setPos(
-            self.rect().x() + self.rect().width() + 10, self.rect().y())
+        self.infoTextItem.setPos(self.rect().x(), self.rect().y() - 20)
 
     def setRect(self, *args, **kwargs):
         super(InfoRectItem, self).setRect(*args, **kwargs)
-        self.infoTextItem.setPos(
-            self.rect().x() + self.rect().width() + 10, self.rect().y())
+        print(self.rect().x())
+        if self.infoTextItem:
+            self.infoTextItem.setPos(
+                self.rect().x(), self.rect().y() - 20)
 
 
 class LabelRectItem(InfoRectItem):

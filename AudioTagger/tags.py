@@ -54,7 +54,7 @@ class Tags:
     def get_color(self, name):
         for tag in self.tags.values():
             if tag.name == name:
-                return tag.name
+                return tag.color
         return None
 
     def remove_empty(self):

@@ -184,6 +184,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.cb_file.activated.connect(self.selectFromFilelist)
         self.ui.cb_playbackSpeed.activated.connect(self.selectPlaybackSpeed)
         self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
+        self.ui.cb_labelType.currentIndexChanged.connect(self.changeTag)
 
         # menu
         self.ui.actionOpen_folder.triggered.connect(self.openFolder)
@@ -889,9 +890,8 @@ class AudioTagger(QtWidgets.QMainWindow):
                                           rectChangedCallback=self.labelRectChangedSlot)
         self.labelRect.deactivate()
         self.labelRect.setRect(x, y, 20, 20)
-        self.labelRect.setColor(penCol)
         self.labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
-        self.labelRect.setupInfoTextItem(fontSize=12)
+        self.labelRect.setupInfoTextItem(fontSize=12, color=penCol)
         # self.labelRect.rectChangedSignal.connect(self.labelRectChangedSlot)
         self.overviewScene.addItem(self.labelRect)
 
@@ -910,6 +910,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.overviewScene.removeItem(self.labelRect)
         else:
             self.labelRects.append(self.labelRect)
+
         self.labelRect = None
         self.contentChanged = True
         self.rectOrgX = None
@@ -954,6 +955,13 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.mouse_scene_x = int(scenePos.x())
         self.mouse_scene_y = int(scenePos.y())
         self.update_info_viewer()
+
+    def changeTag(self, new_index):
+        if self.activeLabel is not None:
+            label = self.labelRects[self.activeLabel]
+            tag = self.ui.cb_labelType.itemText(new_index)
+            label.setInfoString(tag)
+            self.rectClasses[label] = tag
 
     ################### LABELS (SAVE/LOAD/NAVIGATION) #########################
 
@@ -1095,12 +1103,11 @@ class AudioTagger(QtWidgets.QMainWindow):
 
             labelRect = MR.LabelRectItem(self.menu,
                                          self.registerLastLabelRectContext,
-                                         c,
+                                         infoString=c,
                                          rectChangedCallback=self.labelRectChangedSlot)
             labelRect.setRect(rect)
-            labelRect.setColor(penCol)
             labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
-            labelRect.setupInfoTextItem(fontSize=12)
+            labelRect.setupInfoTextItem(fontSize=12, color=penCol)
             # labelRect.rectChangedSignal.connect(self.labelRectChangedSlot)
             self.overviewScene.addItem(labelRect)
 
