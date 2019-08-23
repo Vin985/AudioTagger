@@ -339,7 +339,6 @@ class AudioTagger(QtWidgets.QMainWindow):
     # SETTINGS
 
     def saveSettingsLocal(self):
-        print("saveSettingsLocal")
 
         # settings = QtCore.QSettings()
         # settings.beginGroup("labels")
@@ -456,9 +455,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def updateSettings(self, labels):
         #self.labels = labels
-        print("in update settings")
-        print(labels)
-        print(self.labels)
+        # print("in update settings")
         self.update_labels_Ui()
         self.saveSettingsLocal()
 
@@ -1401,7 +1398,6 @@ class KeyboardFilterObj(QtCore.QObject):
     def eventFilter(self, obj, event):
         # print event.type()
         if event.type() == QtCore.QEvent.KeyPress:
-            print("key pressed")
             if event.key() == QtCore.Qt.Key_Tab:
                 self.parent.toggleLabels()
             elif event.key() == QtCore.Qt.Key_Left:
@@ -1409,7 +1405,6 @@ class KeyboardFilterObj(QtCore.QObject):
             elif event.key() == QtCore.Qt.Key_Right:
                 self.parent.loadNext()
             elif event.key() == QtCore.Qt.Key_Shift:
-                print("alt pressed")
                 if self.parent.createOn:
                     self.parent.toggleCreateMode()
 
