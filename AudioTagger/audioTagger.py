@@ -17,6 +17,7 @@ import AudioTagger.colourMap as CM
 import AudioTagger.modifyableRect as MR
 # from AudioTagger.main_gui import Ui_MainWindow
 from AudioTagger.gui_mod import Ui_MainWindow
+from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
 
 # from PySide import QtCore, QtGui
@@ -403,9 +404,12 @@ class AudioTagger(QtWidgets.QMainWindow):
                                   settings.value(key))
 
     def openClassSettings(self):
-        cd = CD.ClassDialog(self, self.labels)
-        cd.settingsSig.connect(self.updateSettings)
-        cd.show()
+        # cd = CD.ClassDialog(self, self.labels)
+        # cd.settingsSig.connect(self.updateSettings)
+        # cd.show()
+        td = TagDialog(self, self.labels)
+        td.settingsSig.connect(self.updateSettings)
+        td.show()
 
     def changeLabelIdx(self, i):
         self.ui.cb_labelType.setCurrentIndex(i)
