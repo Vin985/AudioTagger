@@ -6,7 +6,7 @@ class Tags:
         self.next_id = 1
         self.tags = {}
 
-    def add(self, name, color, keyseq, related=[]):
+    def add(self, name, color=None, keyseq=None, related=[]):
         tag_id = self.next_id
         tag = Tag(tag_id, name, color, keyseq, related)
         self.tags[tag_id] = tag
@@ -78,20 +78,35 @@ class Tag:
             else:
                 self.related = related
 
-    def add_parent(self, parent):
-        print("adding parent {} for tag {}".format(parent, self.name))
-        if not isinstance(parent, list):
-            self.related.append(parent)
+    def add_related(self, tags):
+        print("adding parent {} for tag {}".format(tags, self.name))
+        if not isinstance(tags, list):
+            self.related.append(tags)
         else:
-            self.related += parent
+            self.related += tags
 
-    def get_tags(self):
-        res = []
-        print(self.name)
-        res.append(self.name)
+    # def get_related(self, root=True):
+    #     print(self.name)
+    #     res = []
+    #     if not root:
+    #         res.append(self.id)
+    #     for tag in self.related:
+    #         res += tag.get_related(root=False)
+    #     return res
+
+    def get_related(self, root=True, as_list=True):
+        res = set()
+        if not root:
+            res.add(self.id)
         for tag in self.related:
-            res.append(tag.get_tags())
+            res.update(tag.get_related(root=False))
+        if root and as_list:
+            return list(res)
         return res
+
+    def get_related_ids(self):
+        res = []
+        res.append(self.id)
 
     def __str__(self):
         return("Tag object with id: {0}, name: {1}. Related tags: {2}".format(str(self.id),
@@ -101,18 +116,19 @@ class Tag:
 
 # tags = Tags()
 # t1 = tags.add("test")
-# t2 = tags.add("test2", [t1])
+# t2 = tags.add("test2", related=[t1])
 # t3 = tags.add("test3")
-# print(len(t1.related))
-# t3.add_parent(t2)
-# print(len(t1.related))
+# t4 = tags.add("test4", related=[t3, t1])
+# t3.add_related(t2)
 # print(tags)
-# tags.save("test.yaml")
-# tags2 = Tags()
-# tags2.load("test.yaml")
-# print(tags)
-# print(tags2)
-# # t2.get_tags()
-# # t3.get_tags()
+# # tags.save("test.yaml")
+# # tags2 = Tags()
+# # tags2.load("test.yaml")
+# # print(tags)
+# # print(tags2)
+# print(t2.get_related())
+# print(t3.get_related())
+# print(t4.get_related())
+# # t3.get_related()
 #
 # print(tags[1])
