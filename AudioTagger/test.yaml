@@ -1,14 +1,20 @@
 1: &id001 !!python/object:__main__.Tag
+  color: null
   id: 1
+  keyseq: null
   name: test
   related: []
 2: &id002 !!python/object:__main__.Tag
+  color: null
   id: 2
+  keyseq: null
   name: test2
   related:
   - *id001
 3: !!python/object:__main__.Tag
+  color: null
   id: 3
+  keyseq: null
   name: test3
   related:
   - *id002
