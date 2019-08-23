@@ -29,6 +29,7 @@ class TagForm(QtWidgets.QWidget, Ui_TagForm):
         self.input_keyseq.editingFinished.connect(self.new_keyseq)
         self.btn_color.clicked.connect(self.color_clicked)
         self.btn_delete.clicked.connect(self.delete_clicked)
+        self.btn_edit_related.clicked.connect(self.edit_related)
 
     def load_data(self):
         idx = self.tag.id
@@ -80,3 +81,6 @@ class TagForm(QtWidgets.QWidget, Ui_TagForm):
         print("deleting tag")
         self.delete_tag.emit(self.tag.id)
         self.setParent(None)
+
+    def edit_related(self):
+        print("editing related tags")

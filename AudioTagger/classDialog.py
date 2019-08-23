@@ -25,7 +25,7 @@ class ClassDialog(QtWidgets.QDialog, Ui_Dialog):
         self.tag_forms = {}
         self.creatingNewLabelSet = False
         self.to_delete = []
-        self.to_create = []
+        self.to_add = []
 
         for tag in labels.tags.values():
             self.create_tag(tag)
@@ -48,7 +48,7 @@ class ClassDialog(QtWidgets.QDialog, Ui_Dialog):
             color.setRgb(255, 0, 127)
             keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
             tag = self.labels.add(name, color.rgb(), keyseq)
-            tag = self.to_add[tag.id]
+            #tag = self.to_add[tag.id]
 
         tag_form = TagForm(tag=tag, parent=self)
         self.tag_forms[tag.id] = tag_form
@@ -163,8 +163,6 @@ class ClassDialog(QtWidgets.QDialog, Ui_Dialog):
         del self.tag_forms[tag_id]
         # self.to_delete.add[tag_id]
         self.labels.delete(tag_id)
-        # tag = self.tag_layout.findChild(TagForm, "tag_" + str(tag_id))
-        # self.tag_layout.removeWidget(tag)
 
 
 if __name__ == "__main__":

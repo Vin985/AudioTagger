@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'tag_form.ui',
 # licensing of 'tag_form.ui' applies.
 #
-# Created: Fri Jun  7 16:42:19 2019
+# Created: Fri Aug 23 12:03:13 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,19 +38,20 @@ class Ui_TagForm(object):
         self.lbl_related = QtWidgets.QLabel(TagForm)
         self.lbl_related.setObjectName("lbl_related")
         self.horizontalLayout.addWidget(self.lbl_related)
-        self.btn_add_related = QtWidgets.QPushButton(TagForm)
+        self.btn_edit_related = QtWidgets.QPushButton(TagForm)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_add_related.sizePolicy().hasHeightForWidth())
-        self.btn_add_related.setSizePolicy(sizePolicy)
-        self.btn_add_related.setText("")
+        sizePolicy.setHeightForWidth(self.btn_edit_related.sizePolicy().hasHeightForWidth())
+        self.btn_edit_related.setSizePolicy(sizePolicy)
+        self.btn_edit_related.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/add"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_add_related.setIcon(icon)
-        self.btn_add_related.setFlat(True)
-        self.btn_add_related.setObjectName("btn_add_related")
-        self.horizontalLayout.addWidget(self.btn_add_related)
+        icon.addPixmap(QtGui.QPixmap(":/icons/edit"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_edit_related.setIcon(icon)
+        self.btn_edit_related.setIconSize(QtCore.QSize(24, 24))
+        self.btn_edit_related.setFlat(True)
+        self.btn_edit_related.setObjectName("btn_edit_related")
+        self.horizontalLayout.addWidget(self.btn_edit_related)
         self.input_keyseq = KeySequenceEdit(TagForm)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -80,7 +81,7 @@ class Ui_TagForm(object):
         TagForm.setWindowTitle(QtWidgets.QApplication.translate("TagForm", "Form", None, -1))
         self.input_name.setPlaceholderText(QtWidgets.QApplication.translate("TagForm", "Tag name", None, -1))
         self.lbl_related.setText(QtWidgets.QApplication.translate("TagForm", "No related tags found", None, -1))
-        self.btn_add_related.setToolTip(QtWidgets.QApplication.translate("TagForm", "Add related tag", None, -1))
+        self.btn_edit_related.setToolTip(QtWidgets.QApplication.translate("TagForm", "Manage related tags", None, -1))
         self.input_keyseq.setPlaceholderText(QtWidgets.QApplication.translate("TagForm", "Key shortcut", None, -1))
         self.btn_delete.setToolTip(QtWidgets.QApplication.translate("TagForm", "Delete tag", None, -1))
 
