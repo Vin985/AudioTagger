@@ -14,5 +14,6 @@
         <file alias="stop">icons/fa-stop.svg</file>
         <file alias="delete">icons/fa-trash.svg</file>
         <file alias="add">icons/fa-plus.svg</file>
+        <file alias="edit">icons/fa-edit.svg</file>
     </qresource>
 </RCC>
