@@ -22,9 +22,12 @@ class TagListModel(QtGui.QStandardItemModel):
     def create_model(self):
         print(self.tags.tags)
         for tag in self.tags.tags.values():
-            item = QtGui.QStandardItem(tag.name)
-            item.setData(tag.id)
-            self.appendRow(item)
+            self.add_item(tag)
+
+    def add_item(self, tag):
+        item = QtGui.QStandardItem(tag.name)
+        item.setData(tag.id)
+        self.appendRow(item)
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
@@ -35,14 +38,15 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.setupUi(self)
 
         self.tags = tag_list
+        self.tags_model = None
 
         self.init_list()
         self.connectSignals()
         self.tag_list.setCurrentIndex(self.tag_list.model().index(0, 0))
 
     def init_list(self):
-        model = TagListModel(self, self.tags)
-        self.tag_list.setModel(model)
+        self.tags_model = TagListModel(self, self.tags)
+        self.tag_list.setModel(self.tags_model)
         # self.tag_list.addItems(labels.get_names())
 
     def getSettings(self):
@@ -61,15 +65,27 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.input_name.editingFinished.connect(self.new_name)
         self.input_keyseq.editingFinished.connect(self.new_keyseq)
         self.btn_color.clicked.connect(self.color_clicked)
-        self.btn_delete.clicked.connect(self.delete_clicked)
+        self.btn_delete.clicked.connect(self.delete_tag)
         self.btn_edit_related.clicked.connect(self.edit_related)
+
+    def create_tag(self, tag=None):
+        color = QtGui.QColor()
+        if not tag:
+            name = "<New Tag>"
+            color.setRgb(255, 0, 127)
+            keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
+            tag = self.tags.add(name, color.rgb(), keyseq)
+            #tag = self.to_add[tag.id]
+        self.tags_model.add_item(tag)
 
     def update_details(self, new, old):
         index = new.indexes()[0]
         item = index.model().itemFromIndex(index)
-        self.show_tag_details(self.tags[item.data()])
+        self.currentTag = self.tags[item.data()]
+        self.show_tag_details()
 
-    def show_tag_details(self, tag):
+    def show_tag_details(self):
+        tag = self.currentTag
         # Name
         self.input_name.setText(tag.name)
 
@@ -83,34 +99,40 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         # Key Sequence
         self.input_keyseq.setKeySequence(tag.keyseq)
 
-    def create_tag(self, tag=None):
-        color = QtGui.QColor()
-        if not tag:
-            name = ""
-            color.setRgb(255, 0, 127)
-            keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
-            tag = self.labels.add(name, color.rgb(), keyseq)
-            #tag = self.to_add[tag.id]
+    def select_color(self):
+        color = QtWidgets.QColorDialog.getColor()
+        pal = self.btn_color.palette()
+        pal.setColor(QtGui.QPalette.Button, color)
+        self.btn_color.setPalette(pal)
+        self.currentTag.color = color.rgb()
 
-        tag_form = TagForm(tag=tag, parent=self)
-        self.tag_forms[tag.id] = tag_form
-        tag_form.delete_tag.connect(self.delete_tag)
-        self.tag_layout.addWidget(tag_form)
+    def lineEditFinished(self, input_name):
+        value = getattr(self, "input_" + input_name).text()
+        setattr(self.currentTag, input_name, value)
+
+    def new_name(self):
+        self.lineEditFinished("name")
+
+    def color_clicked(self):
+        self.select_color()
+
+    def new_keyseq(self):
+        self.lineEditFinished("keyseq")
+
+    @QtCore.Slot()
+    def delete_tag(self):
+        print("deleting tag")
+        self.tags.delete(self.currentTag.id)
+        currentIndex = self.tag_list.selectionModel().currentIndex()
+        self.tags_model.removeRow(currentIndex.row())
+
+    def edit_related(self):
+        print("editing related tags")
 
     def sendSettings(self):
         print("sending settings")
         self.tags.remove_empty()
-        self.settingsSig.emit(self.labels)
-
-    def remove_pending(self):
-        pass
-
-    @QtCore.Slot()
-    def delete_tag(self, tag_id):
-        print("deleting tag:" + str(tag_id))
-        del self.tag_forms[tag_id]
-        # self.to_delete.add[tag_id]
-        self.labels.delete(tag_id)
+        self.settingsSig.emit(self.tags)
 
 
 if __name__ == "__main__":

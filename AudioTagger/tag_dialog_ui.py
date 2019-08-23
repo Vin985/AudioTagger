@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'tag_dialog.ui',
 # licensing of 'tag_dialog.ui' applies.
 #
-# Created: Fri Aug 23 16:06:10 2019
+# Created: Fri Aug 23 16:45:49 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -121,9 +121,9 @@ class Ui_TagDialog(object):
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem3)
-        self.pushButton = QtWidgets.QPushButton(self.tag_form)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_6.addWidget(self.pushButton)
+        self.btn_edit_related = QtWidgets.QPushButton(self.tag_form)
+        self.btn_edit_related.setObjectName("btn_edit_related")
+        self.horizontalLayout_6.addWidget(self.btn_edit_related)
         self.gridLayout.addLayout(self.horizontalLayout_6, 4, 1, 1, 1)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
@@ -171,7 +171,7 @@ class Ui_TagDialog(object):
         self.label.setText(QtWidgets.QApplication.translate("TagDialog", "Tag Name:", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("TagDialog", "Border Color:", None, -1))
         self.input_name.setPlaceholderText(QtWidgets.QApplication.translate("TagDialog", "Tag name", None, -1))
-        self.pushButton.setText(QtWidgets.QApplication.translate("TagDialog", "Manage related tags", None, -1))
+        self.btn_edit_related.setText(QtWidgets.QApplication.translate("TagDialog", "Manage related tags", None, -1))
         self.input_keyseq.setPlaceholderText(QtWidgets.QApplication.translate("TagDialog", "Key shortcut", None, -1))
         self.btn_delete.setText(QtWidgets.QApplication.translate("TagDialog", "Delete Tag", None, -1))
 
