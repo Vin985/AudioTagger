@@ -17,7 +17,7 @@ class Tags:
         del self.tags[id]
 
     def __getitem__(self, key):
-        print("getting item with key " + str(key))
+        # print("getting item with key " + str(key))
         return self.tags[key]
 
     def __str__(self):
@@ -59,8 +59,6 @@ class Tags:
 
     def remove_empty(self):
         res = {key: value for key, value in self.tags.items() if value.name}
-        print("in remove empty")
-        print(res)
         self.tags = res
         self.next_id = max(self.tags.keys()) + 1
 
