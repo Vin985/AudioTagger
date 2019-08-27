@@ -93,41 +93,42 @@ class Tag:
     #         res += tag.get_related(root=False)
     #     return res
 
-    def get_related(self, root=True, as_list=True):
+    def get_related(self, level=0, as_list=True, min_level=-1, max_level=-1):
         res = set()
-        if not root:
-            res.add(self.id)
+        if level > 0 and level > min_level:
+            res.add(self.name)
+        if max_level > 0 and level == max_level:
+            return res
         for tag in self.related:
-            res.update(tag.get_related(root=False))
-        if root and as_list:
+            res.update(tag.get_related(level=level + 1,
+                                       min_level=min_level, max_level=max_level))
+        if level == 0 and as_list:
             return list(res)
         return res
 
     def get_related_ids(self):
         res = []
-        res.append(self.id)
+        res.append(self.name)
 
     def __str__(self):
-        return("Tag object with id: {0}, name: {1}. Related tags: {2}".format(str(self.id),
-                                                                              str(self.name),
-                                                                              str(self.related)))
+        return("Tag object with name: {0}. Related tags: {1}".format(str(self.name),
+                                                                     str(self.related)))
 
 
-# tags = Tags()
-# t1 = tags.add("test")
-# t2 = tags.add("test2", related=[t1])
-# t3 = tags.add("test3")
-# t4 = tags.add("test4", related=[t3, t1])
-# t3.add_related(t2)
+tags = Tags()
+t1 = tags.add("test")
+t2 = tags.add("test2", related=[t1])
+t3 = tags.add("test3")
+t32 = tags.add("test32")
+t4 = tags.add("test4", related=[t32, t2])
+t3.add_related(t2)
+print(tags)
+# tags.save("test.yaml")
+# tags2 = Tags()
+# tags2.load("test.yaml")
 # print(tags)
-# # tags.save("test.yaml")
-# # tags2 = Tags()
-# # tags2.load("test.yaml")
-# # print(tags)
-# # print(tags2)
-# print(t2.get_related())
-# print(t3.get_related())
-# print(t4.get_related())
-# # t3.get_related()
-#
-# print(tags[1])
+# print(tags2)
+print(t2.get_related())
+print(t3.get_related(max_level=1))
+print(t4.get_related(min_level=1))
+# t3.get_related()
