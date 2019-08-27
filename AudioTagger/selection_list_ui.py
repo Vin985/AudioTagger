@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'selection_list.ui',
 # licensing of 'selection_list.ui' applies.
 #
-# Created: Thu Jun  6 15:15:48 2019
+# Created: Mon Aug 26 21:58:30 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,7 +18,6 @@ class Ui_SelectionList(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.list_src = QtWidgets.QListWidget(SelectionList)
         self.list_src.setObjectName("list_src")
-        QtWidgets.QListWidgetItem(self.list_src)
         self.horizontalLayout.addWidget(self.list_src)
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setContentsMargins(20, -1, 20, -1)
@@ -53,9 +52,5 @@ class Ui_SelectionList(object):
 
     def retranslateUi(self, SelectionList):
         SelectionList.setWindowTitle(QtWidgets.QApplication.translate("SelectionList", "Form", None, -1))
-        __sortingEnabled = self.list_src.isSortingEnabled()
-        self.list_src.setSortingEnabled(False)
-        self.list_src.item(0).setText(QtWidgets.QApplication.translate("SelectionList", "New Item", None, -1))
-        self.list_src.setSortingEnabled(__sortingEnabled)
 
 import resources_rc

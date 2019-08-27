@@ -15,13 +15,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QListWidget" name="list_src">
-     <item>
-      <property name="text">
-       <string>New Item</string>
-      </property>
-     </item>
-    </widget>
+    <widget class="QListWidget" name="list_src"/>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">

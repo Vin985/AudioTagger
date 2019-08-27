@@ -1,14 +1,11 @@
 __author__ = 'peter'
 
 import sys
-import warnings
 
 from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtCore import Qt
 
-from AudioTagger.keysequenceedit import KeySequenceEdit
+from AudioTagger.manage_related_dialog import ManageRelatedDialog
 from AudioTagger.tag_dialog_ui import Ui_TagDialog
-from AudioTagger.tag_form import TagForm
 
 
 class TagListModel(QtGui.QStandardItemModel):
@@ -28,6 +25,7 @@ class TagListModel(QtGui.QStandardItemModel):
         item = QtGui.QStandardItem(tag.name)
         item.setData(tag.id)
         self.appendRow(item)
+        return item
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
@@ -38,15 +36,18 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.setupUi(self)
 
         self.tags = tag_list
-        self.tags_model = None
+        # self.tags_model = None
+        self.current_tag = None
 
         self.init_list()
         self.connectSignals()
-        self.tag_list.setCurrentIndex(self.tag_list.model().index(0, 0))
+        # self.tag_list.setCurrentIndex(self.tag_list.model().index(0, 0))
+        self.tag_list.setCurrentRow(0)
 
     def init_list(self):
-        self.tags_model = TagListModel(self, self.tags)
-        self.tag_list.setModel(self.tags_model)
+        self.tag_list.addItems(self.tags.get_names())
+        # self.tags_model = TagListModel(self, self.tags)
+        # self.tag_list.setModel(self.tags_model)
         # self.tag_list.addItems(labels.get_names())
 
     def getSettings(self):
@@ -55,11 +56,12 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
     def connectSignals(self):
         self.buttonBox.accepted.connect(self.sendSettings)
         # self.buttonBox.rejected.connect(self.remove_pending)
-        self.btn_add.clicked.connect(self.create_tag)
+        self.btn_add.clicked.connect(self.add_tag)
         applyButton = self.buttonBox.button(
             QtWidgets.QDialogButtonBox.Apply)
         applyButton.clicked.connect(self.sendSettings)
         self.tag_list.selectionModel().selectionChanged.connect(self.update_details)
+        self.tag_list.currentRowChanged.connect(self.update_details)
 
         # Tag form link_signals
         self.input_name.editingFinished.connect(self.new_name)
@@ -68,24 +70,30 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.btn_delete.clicked.connect(self.delete_tag)
         self.btn_edit_related.clicked.connect(self.edit_related)
 
-    def create_tag(self, tag=None):
-        color = QtGui.QColor()
+    def add_tag(self, tag=None):
         if not tag:
+            # TODO check if exists
             name = "<New Tag>"
+            color = QtGui.QColor()
             color.setRgb(255, 0, 127)
             keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
             tag = self.tags.add(name, color.rgb(), keyseq)
             #tag = self.to_add[tag.id]
-        self.tags_model.add_item(tag)
+        self.tag_list.addItem(name)
+        self.tag_list.setCurrentRow(self.tag_list.count() - 1)
+        # item = self.tags_model.add_item(tag)
+        # index = self.tags_model.indexFromItem(item)
+        # self.tag_list.selectionModel().setCurrentIndex(
+        #     index, QtCore.QItemSelectionModel.ClearAndSelect)
 
-    def update_details(self, new, old):
-        index = new.indexes()[0]
-        item = index.model().itemFromIndex(index)
-        self.currentTag = self.tags[item.data()]
+    def update_details(self, row):
+        # index = new.indexes()[0]
+        # item = index.model().itemFromIndex(index)
+        self.current_tag = self.tags[self.tag_list.currentItem().text()]
         self.show_tag_details()
 
     def show_tag_details(self):
-        tag = self.currentTag
+        tag = self.current_tag
         # Name
         self.input_name.setText(tag.name)
 
@@ -99,19 +107,25 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         # Key Sequence
         self.input_keyseq.setKeySequence(tag.keyseq)
 
+        # Related tags
+        self.lbl_related_tags.setText(str(tag.get_related()))
+
     def select_color(self):
         color = QtWidgets.QColorDialog.getColor()
         pal = self.btn_color.palette()
         pal.setColor(QtGui.QPalette.Button, color)
         self.btn_color.setPalette(pal)
-        self.currentTag.color = color.rgb()
+        self.current_tag.color = color.rgb()
 
     def lineEditFinished(self, input_name):
         value = getattr(self, "input_" + input_name).text()
-        setattr(self.currentTag, input_name, value)
+        setattr(self.current_tag, input_name, value)
 
     def new_name(self):
         self.lineEditFinished("name")
+        # currentIndex = self.tag_list.selectionModel().currentIndex()
+        # item = self.tags_model.itemFromIndex(currentIndex)
+        self.tag_list.currentItem().setText(self.current_tag.name)
 
     def color_clicked(self):
         self.select_color()
@@ -122,12 +136,15 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
     @QtCore.Slot()
     def delete_tag(self):
         print("deleting tag")
-        self.tags.delete(self.currentTag.id)
-        currentIndex = self.tag_list.selectionModel().currentIndex()
-        self.tags_model.removeRow(currentIndex.row())
+        self.tags.delete(self.current_tag.name)
+        # currentIndex = self.tag_list.selectionModel().currentIndex()
+        # self.tags_model.removeRow(currentIndex.row())
+        self.tag_list.takeItem(self.tag_list.currentRow())
 
     def edit_related(self):
         print("editing related tags")
+        dialog = ManageRelatedDialog(self, self.tags, self.current_tag)
+        dialog.show()
 
     def sendSettings(self):
         print("sending settings")

@@ -68,7 +68,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListView" name="tag_list">
+        <widget class="QListWidget" name="tag_list">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>

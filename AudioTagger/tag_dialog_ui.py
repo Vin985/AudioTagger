@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'tag_dialog.ui',
 # licensing of 'tag_dialog.ui' applies.
 #
-# Created: Fri Aug 23 16:45:49 2019
+# Created: Mon Aug 26 15:40:27 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,7 +43,7 @@ class Ui_TagDialog(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_8.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.horizontalLayout_8)
-        self.tag_list = QtWidgets.QListView(self.verticalLayoutWidget)
+        self.tag_list = QtWidgets.QListWidget(self.verticalLayoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
