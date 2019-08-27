@@ -3,18 +3,15 @@ import yaml
 
 class Tags:
     def __init__(self):
-        self.next_id = 1
         self.tags = {}
 
     def add(self, name, color=None, keyseq=None, related=[]):
-        tag_id = self.next_id
-        tag = Tag(tag_id, name, color, keyseq, related)
-        self.tags[tag_id] = tag
-        self.next_id += 1
+        tag = Tag(name, color, keyseq, related)
+        self.tags[name] = tag
         return tag
 
-    def delete(self, id):
-        del self.tags[id]
+    def delete(self, name):
+        del self.tags[name]
 
     def __getitem__(self, key):
         # print("getting item with key " + str(key))
@@ -33,11 +30,13 @@ class Tags:
     def load(self, path=""):
         try:
             stream = open(path, 'r')
-            self.tags = yaml.load(stream, Loader=yaml.Loader) or {}
+            tmp = yaml.load(stream, Loader=yaml.Loader) or {}
+            for v in tmp.values():
+                self.tags[v.name] = v
             self.check_dependencies()
             # ids = [tag.id for tag in self.tags]
-            if self.tags:
-                self.next_id = max(self.tags.keys()) + 1
+            # if self.tags:
+            #     self.next_id = max(self.tags.keys()) + 1
         except FileNotFoundError:
             print("file not found")
 
@@ -49,23 +48,25 @@ class Tags:
         return [tag.keyseq for tag in self.tags.values()]
 
     def get_names(self):
-        return [tag.name for tag in self.tags.values()]
+        return list(self.tags.keys())
+        # return [tag.name for tag in self.tags.values()]
 
     def get_color(self, name):
-        for tag in self.tags.values():
-            if tag.name == name:
-                return tag.color
-        return None
+        return self.tags[name].color
+        # for tag in self.tags.values():
+        #     if tag.name == name:
+        #         return tag.color
+        # return None
 
     def remove_empty(self):
-        res = {key: value for key, value in self.tags.items() if value.name}
+        res = {key: value for key, value in self.tags.items(
+        ) if value.name and value.name != "<New Tag>"}
         self.tags = res
-        self.next_id = max(self.tags.keys()) + 1
+        # self.next_id = max(self.tags.keys()) + 1
 
 
 class Tag:
-    def __init__(self, id, name, color, keyseq, related=None):
-        self.id = id
+    def __init__(self, name, color, keyseq, related=None):
         self.name = name
         self.color = color
         self.keyseq = keyseq
