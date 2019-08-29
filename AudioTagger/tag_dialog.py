@@ -105,6 +105,7 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.btn_color.setPalette(pal)
 
         # Key Sequence
+        print(tag.keyseq)
         self.input_keyseq.setKeySequence(tag.keyseq)
 
         # Related tags
@@ -118,20 +119,19 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.current_tag.color = color.rgb()
 
     def lineEditFinished(self, input_name):
-        value = getattr(self, "input_" + input_name).text()
-        setattr(self.current_tag, input_name, value)
+        return getattr(self, "input_" + input_name).text()
 
     def new_name(self):
-        self.lineEditFinished("name")
-        # currentIndex = self.tag_list.selectionModel().currentIndex()
-        # item = self.tags_model.itemFromIndex(currentIndex)
+        new = self.lineEditFinished("name")
+        self.tags.update_name(self.current_tag.name, new)
         self.tag_list.currentItem().setText(self.current_tag.name)
 
     def color_clicked(self):
         self.select_color()
 
     def new_keyseq(self):
-        self.lineEditFinished("keyseq")
+        new = self.lineEditFinished("keyseq")
+        self.current_tag.keyseq = new
 
     @QtCore.Slot()
     def delete_tag(self):
