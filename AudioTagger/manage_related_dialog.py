@@ -26,11 +26,24 @@ class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):
         self.selection_widget.init_lists(src, self.related)
 
         # Disable all related tags
-        all_related = current.get_related(min_level=1)
-        self.selection_widget.disable_items(
-            self.selection_widget.list_src, all_related)
+        self.disable_related(self.current, min_level=1)
 
         self.connectSignals()
+
+    def disable_related(self, tag, min_level=0):
+        related = tag.get_related(min_level=min_level)
+        self.selection_widget.disable_items(
+            self.selection_widget.list_src, related)
+
+    def enable_related(self, tag):
+        # Get all related tag from removed tag
+        related = tag.get_related()
+        # Get all related tags for current tag
+        all_related = self.current.get_related()
+        # Do not enable tags that are related to other tags
+        to_enable = list(set(related) - set(all_related))
+        self.selection_widget.enable_items(
+            self.selection_widget.list_src, to_enable)
 
     def connectSignals(self):
         self.buttonBox.accepted.connect(self.send_tags)
@@ -46,12 +59,13 @@ class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):
         for tag in added:
             to_add = self.tags[tag]
             self.current.add_related(to_add)
-            related = to_add.get_related()
-            if related:
-                print(related)
-                existing = self.selection_widget.get_dest_text()
-                print(existing)
-            print(tag)
+            self.disable_related(to_add)
 
     def remove_related(self, removed):
-        print(removed)
+        for tag in removed:
+            to_remove = self.tags[tag]
+            self.current.remove_related(to_remove)
+            self.enable_related(to_remove)
+            if tag in self.current.get_related():
+                self.selection_widget.disable_items(
+                    self.selection_widget.list_src, [tag])

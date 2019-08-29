@@ -26,9 +26,18 @@ class SelectionListWidget(QtWidgets.QWidget, Ui_SelectionList):
     def disable_items(self, list_widget, to_disable):
         # if they intersect, disable selected choices
         for tag in to_disable:
+            res = self.list_src.findItems(
+                tag, QtCore.Qt.MatchExactly)
+            if res:
+                item = res[0]
+                item.setFlags(QtCore.Qt.NoItemFlags)
+
+    def enable_items(self, list_widget, to_enable):
+        # if they intersect, disable selected choices
+        for tag in to_enable:
             item = self.list_src.findItems(
                 tag, QtCore.Qt.MatchExactly)[0]
-            item.setFlags(QtCore.Qt.NoItemFlags)
+            item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
     def link_signals(self):
         self.btn_add.clicked.connect(self.add)
