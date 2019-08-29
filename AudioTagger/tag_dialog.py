@@ -36,26 +36,20 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.setupUi(self)
 
         self.tags = tag_list
-        # self.tags_model = None
         self.current_tag = None
 
         self.init_list()
         self.connectSignals()
-        # self.tag_list.setCurrentIndex(self.tag_list.model().index(0, 0))
         self.tag_list.setCurrentRow(0)
 
     def init_list(self):
         self.tag_list.addItems(self.tags.get_names())
-        # self.tags_model = TagListModel(self, self.tags)
-        # self.tag_list.setModel(self.tags_model)
-        # self.tag_list.addItems(labels.get_names())
 
     def getSettings(self):
         self.show()
 
     def connectSignals(self):
         self.buttonBox.accepted.connect(self.sendSettings)
-        # self.buttonBox.rejected.connect(self.remove_pending)
         self.btn_add.clicked.connect(self.add_tag)
         applyButton = self.buttonBox.button(
             QtWidgets.QDialogButtonBox.Apply)
@@ -78,17 +72,10 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
             color.setRgb(255, 0, 127)
             keyseq = ""  # int(QtCore.Qt.Key_0) + self.label_count + 1
             tag = self.tags.add(name, color.rgb(), keyseq)
-            #tag = self.to_add[tag.id]
         self.tag_list.addItem(name)
         self.tag_list.setCurrentRow(self.tag_list.count() - 1)
-        # item = self.tags_model.add_item(tag)
-        # index = self.tags_model.indexFromItem(item)
-        # self.tag_list.selectionModel().setCurrentIndex(
-        #     index, QtCore.QItemSelectionModel.ClearAndSelect)
 
     def update_details(self, row):
-        # index = new.indexes()[0]
-        # item = index.model().itemFromIndex(index)
         self.current_tag = self.tags[self.tag_list.currentItem().text()]
         self.show_tag_details()
 
@@ -137,8 +124,6 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
     def delete_tag(self):
         print("deleting tag")
         self.tags.delete(self.current_tag.name)
-        # currentIndex = self.tag_list.selectionModel().currentIndex()
-        # self.tags_model.removeRow(currentIndex.row())
         self.tag_list.takeItem(self.tag_list.currentRow())
 
     def edit_related(self):
