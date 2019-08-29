@@ -13,6 +13,12 @@ class Tags:
     def delete(self, name):
         del self.tags[name]
 
+    def update_name(self, old, new):
+        tag = self.tags[old]
+        tag.name = new
+        self.tags[new] = tag
+        del self.tags[old]
+
     def __getitem__(self, key):
         # print("getting item with key " + str(key))
         return self.tags[key]
@@ -84,6 +90,9 @@ class Tag:
         else:
             self.related += tags
 
+    def remove_related(self, tag):
+        self.related.remove(tag)
+
     # def get_related(self, root=True):
     #     print(self.name)
     #     res = []
@@ -115,20 +124,20 @@ class Tag:
                                                                      str(self.related)))
 
 
-tags = Tags()
-t1 = tags.add("test")
-t2 = tags.add("test2", related=[t1])
-t3 = tags.add("test3")
-t32 = tags.add("test32")
-t4 = tags.add("test4", related=[t32, t2])
-t3.add_related(t2)
-print(tags)
-# tags.save("test.yaml")
-# tags2 = Tags()
-# tags2.load("test.yaml")
+# tags = Tags()
+# t1 = tags.add("test")
+# t2 = tags.add("test2", related=[t1])
+# t3 = tags.add("test3")
+# t32 = tags.add("test32")
+# t4 = tags.add("test4", related=[t32, t2])
+# t3.add_related(t2)
 # print(tags)
-# print(tags2)
-print(t2.get_related())
-print(t3.get_related(max_level=1))
-print(t4.get_related(min_level=1))
-# t3.get_related()
+# # tags.save("test.yaml")
+# # tags2 = Tags()
+# # tags2.load("test.yaml")
+# # print(tags)
+# # print(tags2)
+# print(t2.get_related())
+# print(t3.get_related(max_level=1))
+# print(t4.get_related(min_level=1))
+# # t3.get_related()
