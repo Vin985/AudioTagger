@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'selection_list.ui',
 # licensing of 'selection_list.ui' applies.
 #
-# Created: Mon Aug 26 21:58:30 2019
+# Created: Wed Aug 28 13:43:08 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,5 +52,7 @@ class Ui_SelectionList(object):
 
     def retranslateUi(self, SelectionList):
         SelectionList.setWindowTitle(QtWidgets.QApplication.translate("SelectionList", "Form", None, -1))
+        self.list_src.setSortingEnabled(True)
+        self.list_dest.setSortingEnabled(True)
 
 import resources_rc

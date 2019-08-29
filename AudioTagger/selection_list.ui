@@ -15,7 +15,11 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <widget class="QListWidget" name="list_src"/>
+    <widget class="QListWidget" name="list_src">
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -82,7 +86,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="list_dest"/>
+    <widget class="QListWidget" name="list_dest">
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
