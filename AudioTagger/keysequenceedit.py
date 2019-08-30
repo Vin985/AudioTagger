@@ -23,6 +23,10 @@ class KeySequenceEdit(QtWidgets.QLineEdit):
         if e.type() == QtCore.QEvent.KeyPress:
             key = e.key()
 
+            if key in (QtCore.Qt.Key_Delete, QtCore.Qt.Key_Backspace):
+                self.setKeySequence("")
+                return
+
             if key == QtCore.Qt.Key_unknown:
                 warnings.warn("Unknown key from a macro probably")
                 return
