@@ -7,25 +7,24 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from AudioTagger.manage_related_dialog import ManageRelatedDialog
 from AudioTagger.tag_dialog_ui import Ui_TagDialog
 
-
-class TagListModel(QtGui.QStandardItemModel):
-
-    def __init__(self, parent, tags):
-        super().__init__(0, 0, parent)
-        print(tags)
-        self.tags = tags
-        self.create_model()
-
-    def create_model(self):
-        print(self.tags.tags)
-        for tag in self.tags.tags.values():
-            self.add_item(tag)
-
-    def add_item(self, tag):
-        item = QtGui.QStandardItem(tag.name)
-        item.setData(tag.id)
-        self.appendRow(item)
-        return item
+# class TagListModel(QtGui.QStandardItemModel):
+#
+#     def __init__(self, parent, tags):
+#         super().__init__(0, 0, parent)
+#         print(tags)
+#         self.tags = tags
+#         self.create_model()
+#
+#     def create_model(self):
+#         print(self.tags.tags)
+#         for tag in self.tags.tags.values():
+#             self.add_item(tag)
+#
+#     def add_item(self, tag):
+#         item = QtGui.QStandardItem(tag.name)
+#         item.setData(tag.id)
+#         self.appendRow(item)
+#         return item
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
@@ -92,7 +91,6 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.btn_color.setPalette(pal)
 
         # Key Sequence
-        print(tag.keyseq)
         self.input_keyseq.setKeySequence(tag.keyseq)
 
         # Related tags
@@ -110,24 +108,28 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
 
     def new_name(self):
         new = self.lineEditFinished("name")
-        self.tags.update_name(self.current_tag.name, new)
-        self.tag_list.currentItem().setText(self.current_tag.name)
+        if new != self.current_tag.name:
+            self.tags.update_name(self.current_tag.name, new)
+            self.tag_list.currentItem().setText(self.current_tag.name)
 
     def color_clicked(self):
         self.select_color()
 
     def new_keyseq(self):
         new = self.lineEditFinished("keyseq")
+        # Same key can be mapped only once
+        # TODO: add alert if the sequence is already mapped
+        old = self.tags.get_key_sequence(new)
+        if old:
+            old.keyseq = ""
         self.current_tag.keyseq = new
 
     @QtCore.Slot()
     def delete_tag(self):
-        print("deleting tag")
         self.tags.delete(self.current_tag.name)
         self.tag_list.takeItem(self.tag_list.currentRow())
 
     def edit_related(self):
-        print("editing related tags")
         dialog = ManageRelatedDialog(self, self.tags, self.current_tag)
         dialog.show()
 
