@@ -55,6 +55,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.labelfolder = labelfolder
 
         self.fileidx = 0
+        self.current_file = None
         # self.filelist = self.getListOfWavefiles(self.basefolder)
 
         self.s4p = S4P.Sound4Python()
@@ -132,7 +133,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.show()
         # self.ui.cb_labelType.addItems(self.labelTypes.keys())
 
-        self.openFolder(self.basefolder, self.labelfolder, self.fileidx)
+        self.openFolder(self.basefolder, self.labelfolder, self.current_file)
 
         self.tracker.deactivate()
         self.deactivateAllLabelRects()
@@ -182,10 +183,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.pb_play.clicked.connect(self.playPauseSound)
         self.ui.pb_stop.clicked.connect(self.stopSound)
         self.ui.pb_seek.clicked.connect(self.activateSoundSeeking)
-        self.ui.cb_file.activated.connect(self.selectFromFilelist)
+        # self.ui.cb_file.activated.connect(self.selectFromFilelist)
         self.ui.cb_playbackSpeed.activated.connect(self.selectPlaybackSpeed)
         self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
         self.ui.cb_labelType.currentIndexChanged.connect(self.changeTag)
+
+        self.ui.file_tree.currentItemChanged.connect(self.change_file)
 
         # menu
         self.ui.actionOpen_folder.triggered.connect(self.openFolder)
@@ -375,10 +378,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         # settings.endGroup()
         # self.labels = res
 
-        if settings.value("fileIdx") is None:
-            self.fileidx = 0
-        else:
-            self.fileidx = int(settings.value("fileIdx"))
+        # if settings.value("fileIdx") is None:
+        #     self.fileidx = 0
+        # else:
+        #     self.fileidx = int(settings.value("fileIdx", 0))
+
+        self.current_file = settings.value("current_file", None)
 
         self.update_labels_Ui()
 
@@ -454,13 +459,17 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.updateShortcuts()
 
     def updateSettings(self, labels):
-        #self.labels = labels
+        # self.labels = labels
         # print("in update settings")
         self.update_labels_Ui()
         self.saveSettingsLocal()
 
     def selectFromFilelist(self, idx):
         self.loadFileIdx(idx)
+
+    def change_file(self, item, column):
+        print(item.text(0))
+        self.load_file(item.text(0))
 
     def selectPlaybackSpeed(self, idx):
         self.changePlaybackSpeed(float(self.ui.cb_playbackSpeed.itemText(idx)))
@@ -604,16 +613,31 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.soundSec = 0.0
         self.updateSoundMarker()
 
-        self.loadSound(self.filelist[self.fileidx])
+        file_path = os.path.join(self.basefolder, self.current_file)
+        # self.loadSound(self.filelist[self.fileidx])
+        self.loadSound(file_path)
         self.setWindowTitle(
-            "Audio Tagger " + os.path.basename(self.filelist[self.fileidx]))
+            "Audio Tagger " + os.path.basename(file_path))
 
         self.scrollView.horizontalScrollBar().triggerAction(
             QtWidgets.QAbstractSlider.SliderToMinimum)
 
-        self.ui.cb_file.setCurrentIndex(self.fileidx)
+        # self.ui.cb_file.setCurrentIndex(self.fileidx)
 
-        print(self.filelist[self.fileidx])
+        # print(self.filelist[self.fileidx])
+
+    def load_file(self, file_name):
+        canProceed = self.checkIfSavingNecessary()
+        if not canProceed:
+            return
+
+        self.unconfiguredLabels = []
+        self.current_file = file_name
+        self.resetView()
+
+        settings = QtCore.QSettings()
+        settings.setValue("current_file", self.current_file)
+        self.setZoomBoundingBox()
 
     def loadFileIdx(self, idx):
         canProceed = self.checkIfSavingNecessary()
@@ -621,7 +645,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             return
 
         self.unconfiguredLabels = []
-        if idx >= 0 and idx < len(self.filelist):
+        if 0 <= idx < len(self.filelist):
             self.fileidx = idx
             self.resetView()
 
@@ -654,7 +678,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         # self.setZoomBoundingBox()
 
     def updateSpecLabel(self):
-        self.spec, self.freqs = self.SpecGen(self.filelist[self.fileidx])
+        self.spec, self.freqs = self.SpecGen(
+            os.path.join(self.basefolder, self.current_file))
         self.updateLabelWithSpectrogram(self.spec)
         self.specHeight = self.spec.shape[1]
         self.specWidth = self.spec.shape[0]
@@ -670,13 +695,13 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         return fileList
 
-    def openFolder(self, wavFolder=None, labelFolder=None, fileIdx=None):
+    def openFolder(self, wavFolder=None, labelFolder=None, current_file=None):
         if wavFolder is None:
             dialog = QtWidgets.QFileDialog()
             dialog.setFileMode(QtWidgets.QFileDialog.Directory)
             wavFolder = dialog.getExistingDirectory(self,
                                                     "Open Folder with wav files",
-                                                    "/home/peter/phd/projects/spectogram/Python/Amalgamated_Code/")
+                                                    "")
 
         self.filelist = self.getListOfWavefiles(wavFolder)
         self.basefolder = wavFolder
@@ -695,13 +720,21 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         self.saveFoldersLocal()
 
-        self.ui.cb_file.clear()
-        self.ui.cb_file.addItems(self.filelist)
+        # self.ui.cb_file.clear()
+        # self.ui.cb_file.addItems(self.filelist)
 
-        if fileIdx:
-            self.loadFileIdx(fileIdx)
+        tree_items = []
+        for file in self.filelist:
+            print(file)
+            item = QtWidgets.QTreeWidgetItem()
+            item.setText(0, os.path.basename(file))
+            tree_items.append(item)
+        self.ui.file_tree.addTopLevelItems(tree_items)
+
+        if current_file:
+            self.load_file(current_file)
         else:
-            self.loadFileIdx(0)
+            self.load_file(self.filelist[0])
 
     ####################### SPECTROGRAM #############################
 
@@ -729,7 +762,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         nfft = nwin
 
         # Get all windows of x with length n as a single array, using strides to avoid data duplication
-        #shape = (nfft, len(range(nfft, len(x), nstep)))
+        # shape = (nfft, len(range(nfft, len(x), nstep)))
         shape = (nfft, int((x.shape[0] - nfft - 1) / nstep) + 1)
         strides = (x.itemsize, nstep * x.itemsize)
         x_wins = np.lib.stride_tricks.as_strided(
@@ -1040,7 +1073,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             # MaximumFreq_Hz    MaxAmp    MinAmp    MeanAmp
             # AmpSD LabelArea_DataPoints
             label = [
-                os.path.basename(self.filelist[self.fileidx]),  # filename
+                self.current_file,  # filename
                 self.rectClasses[labelRect],                    # Label
                 dt.datetime.now().isoformat(),                  # LabelTimeStamp
                 self.specNStepMod,                              # Spec_NStep
@@ -1156,7 +1189,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.update_info_viewer()
 
     def createLabelFilename(self, fileAppendix="-sceneRect", ending='.json'):
-        currentWavFilename = self.filelist[self.fileidx]
+        currentWavFilename = self.current_file
         if currentWavFilename.endswith('.wav') or currentWavFilename.endswith('.WAV'):
             # Everything other than last 4 characters, i.e. .wav
             filename = currentWavFilename[:-4]
@@ -1165,7 +1198,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         # filename += fileAppendix + ".json"
         filename += fileAppendix + ending  # ".csv"
-        filename = os.path.basename(filename)
+        # filename = os.path.basename(filename)
         filename = os.path.join(self.labelfolder, filename)
 
         return filename
