@@ -53,6 +53,12 @@ class Tags:
     def get_key_sequences(self):
         return [tag.keyseq for tag in self.tags.values()]
 
+    def get_key_sequence(self, keyseq):
+        for tag in self.tags.values():
+            if tag.keyseq == keyseq:
+                return tag
+        return None
+
     def get_names(self):
         return list(self.tags.keys())
         # return [tag.name for tag in self.tags.values()]
