@@ -464,18 +464,20 @@ class AudioTagger(QtWidgets.QMainWindow):
     def updateShortcuts(self):
         # keySequences = [label["keyseq"] for label in self.labels]
         keySequences = self.labels.get_key_sequences()
+        n_shortcuts = len(self.shortcuts)
         for idx, keySequence in enumerate(keySequences):
-            if idx < len(self.shortcuts) - 1:
+            if idx < n_shortcuts:
                 self.shortcuts[idx].setKey(keySequence)
             else:
                 self.addKeySequenceToShortcuts(keySequence, idx)
 
-            self.shortcuts[idx].setEnabled(True)
+            self.shortcuts[idx].setEnabled(bool(keySequence))
 
         # disable all shortcuts that do not have corresponding class
         if len(keySequences) < len(self.shortcuts):
             for i in range(len(keySequences), len(self.shortcuts)):
                 self.shortcuts[i].setEnabled(False)
+                del self.shortcuts[i]
 
     def update_labels_Ui(self):
         cc = self.contentChanged
@@ -1174,6 +1176,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
             self.labelRects += [labelRect]
             self.rectClasses[labelRect] = c
+        self.labelRects.sort(key=self.getLabelTimeValue)
 
     def saveSceneRects(self, checked=False, to_append="-sceneRect"):
         filename = self.create_label_filename(
