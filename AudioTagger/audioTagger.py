@@ -188,9 +188,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         # GUI elements
         self.ui.pb_next.clicked.connect(self.load_next)
         self.ui.pb_prev.clicked.connect(self.load_previous)
-        self.ui.pb_toggle_back.clicked.connect(self.toggleToLast)
         self.ui.pb_save.clicked.connect(self.saveSceneRects)
-        self.ui.pb_toggle.clicked.connect(self.toggleLabels)
+
+        self.ui.pb_previous_tag.clicked.connect(self.select_previous_tag)
+        self.ui.pb_next_tag.clicked.connect(self.select_next_tag)
+        self.ui.pb_first_tag.clicked.connect(self.select_first_tag)
+        self.ui.pb_last_tag.clicked.connect(self.select_last_tag)
         # self.ui.pb_edit.clicked.connect(self.toggleEdit)
         self.ui.pb_play.clicked.connect(self.playPauseSound)
         self.ui.pb_stop.clicked.connect(self.stopSound)
@@ -227,7 +230,6 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def init_tree(self):
         tree_items = []
-        print(self.labelfolder)
         for file in self.filelist:
             filename = os.path.basename(file)
 
@@ -282,10 +284,14 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.cb_labelType.setCurrentIndex(2)
 
     def defineShortcuts(self):
-        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Right),
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Right + QtCore.Qt.CTRL),
                             self, self.load_next)
-        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Left),
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Left + QtCore.Qt.CTRL),
                             self, self.load_previous)
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Right),
+                            self, self.select_next_tag)
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Left),
+                            self, self.select_previous_tag)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Tab),
                             self, self.toggleLabels)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S),
@@ -368,7 +374,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.createOn = False
             self.activateAllLabelRects()
 
-        self.toggleTo(None)
+        self.select_tag(None)
 
     def labelRectChangedSlot(self):
         self.contentChanged = True
@@ -498,8 +504,9 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.saveSettingsLocal()
 
     def change_file(self, item, column):
-        print(item.text(0))
-        self.load_file(item.text(0))
+        file = item.text(0)
+        if file != self.current_file:
+            self.load_file(file)
 
     def selectPlaybackSpeed(self, idx):
         self.changePlaybackSpeed(float(self.ui.cb_playbackSpeed.itemText(idx)))
@@ -904,7 +911,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         x = int(scenePos.x())
         y = int(scenePos.y())
         if self.seekingSound:
-            self.mouseEventFilter.isRectangleOpen = False
             self.seekSound(x)
             return
 
@@ -915,13 +921,12 @@ class AudioTagger(QtWidgets.QMainWindow):
                 self.openSceneRectangle(x, y)
 
         else:
-            self.mouseEventFilter.isRectangleOpen = False
             self.toggleToItem(self.overviewScene.itemAt(scenePos, QtGui.QTransform()),
                               centerOnActiveLabel=False)
 
     def releaseInScene(self, scenePos):
-        self.closeSceneRectangle(scenePos)
-        self.isRectangleOpen = False
+        if self.isRectangleOpen:
+            self.closeSceneRectangle(scenePos)
 
     def openSceneRectangle(self, x, y):
         if not self.labels:
@@ -964,11 +969,13 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.overviewScene.removeItem(self.labelRect)
         else:
             self.labelRects.append(self.labelRect)
+            self.labelRects.sort(key=self.getLabelTimeValue)
 
         self.labelRect = None
         self.contentChanged = True
         self.rectOrgX = None
         self.rectOrgY = None
+        self.isRectangleOpen = False
 
     def resizeSceneRectangle(self, x, y):
         if self.labelRect:
@@ -991,13 +998,13 @@ class AudioTagger(QtWidgets.QMainWindow):
     def abortSceneRectangle(self):
         self.overviewScene.removeItem(self.labelRect)
         self.labelRect = None
-        self.mouseEventFilter.isRectangleOpen = False
+        self.isRectangleOpen = False
 
     def clearSceneRects(self):
         if self.labelRect:
             self.overviewScene.removeItem(self.labelRect)
 
-        self.mouseEventFilter.isRectangleOpen = False
+        self.isRectangleOpen = False
 
         for labelRect in self.labelRects:
             self.overviewScene.removeItem(labelRect)
@@ -1190,6 +1197,10 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.file_tree.currentItem().setBackground(0,
                                                       QtGui.QBrush(QtGui.QColor(self.BG_COLOR_WIP)))
 
+    def print_start_time(self):
+        res = [self.getLabelTimeValue(label) for label in self.labelRects]
+        print(res)
+
     def loadSceneRects(self, to_append="-sceneRect"):
         filename = self.create_label_filename(
             self.current_file, to_append=to_append, ext='.csv')
@@ -1250,6 +1261,41 @@ class AudioTagger(QtWidgets.QMainWindow):
         else:
             return None
 
+    def get_tag_index(self, offset):
+        if not self.labelRects:
+            return None
+        if self.activeLabel is None:
+            tag_idx = 0
+        else:
+            tag_idx = self.activeLabel + offset
+        return tag_idx
+
+    def select_next_tag(self):
+        next_idx = self.get_tag_index(offset=1)
+        if next_idx and next_idx >= len(self.labelRects):
+            next_idx = 0
+        self.select_tag(next_idx)
+
+    def select_previous_tag(self):
+        prev_idx = self.get_tag_index(offset=-1)
+        if prev_idx and prev_idx < 0:
+            prev_idx = len(self.labelRects) - 1
+        self.select_tag(prev_idx)
+
+    def select_first_tag(self):
+        if not self.labelRects:
+            idx = None
+        else:
+            idx = 0
+        self.select_tag(idx)
+
+    def select_last_tag(self):
+        if not self.labelRects:
+            idx = None
+        else:
+            idx = len(self.labelRects) - 1
+        self.select_tag(idx)
+
     def toggleLabels(self):
         # iF nothing is selected, highlight the [0] index label when toggle button pressed
         if self.activeLabel is None:
@@ -1259,35 +1305,42 @@ class AudioTagger(QtWidgets.QMainWindow):
             if activeLabel is None:
                 activeLabel = 0
 
-        self.toggleTo(activeLabel)
+        self.select_tag(activeLabel)
 
     def toggleToLast(self):
-        self.toggleTo(len(self.labelRects) - 1)
+        self.select_tag(len(self.labelRects) - 1)
 
-    def toggleTo(self, activeLabel, centerOnActiveLabel=True):
+    def select_tag(self, tag_idx, centerOnActiveLabel=True):
         if self.activeLabel is not None:
-            penCol = self.labels.get_color(
-                self.rectClasses[self.labelRects[self.activeLabel]])
-            pen = QtGui.QPen(penCol)
-            self.labelRects[self.activeLabel].setPen(pen)
+            old_tag = self.labelRects[self.activeLabel]
+            if old_tag:
+                penCol = self.labels.get_color(
+                    self.rectClasses[old_tag])
+                pen = QtGui.QPen(penCol)
+                old_tag.setPen(pen)
 
-        self.activeLabel = activeLabel
-        if activeLabel is None:
+        self.activeLabel = tag_idx
+        if tag_idx is None:
             return
 
-        print("toggling to", self.activeLabel, len(self.labelRects))
+        print("selecting: ", self.activeLabel, len(self.labelRects))
+        new_tag = self.labelRects[self.activeLabel]
         penCol = QtGui.QColor()
         penCol.setRgb(255, 255, 255)
         pen = QtGui.QPen(penCol)
-        self.labelRects[self.activeLabel].setPen(pen)
+        new_tag.setPen(pen)
 
         if centerOnActiveLabel:
-            self.scrollView.centerOn(self.labelRects[self.activeLabel])
+            self.scrollView.centerOn(new_tag)
             self.setZoomBoundingBox()
+        # change tag in combo_box
+        cb_tag_idx = self.ui.cb_labelType.findText(
+            new_tag.infoString, QtCore.Qt.MatchExactly)
+        self.ui.cb_labelType.setCurrentIndex(cb_tag_idx)
 
     def toggleToItem(self, item, centerOnActiveLabel=True):
         itemIdx = self.labelRects.index(item)
-        self.toggleTo(itemIdx, centerOnActiveLabel)
+        self.select_tag(itemIdx, centerOnActiveLabel)
 
     def deteleActiveLabel(self):
         if self.activeLabel is None:
@@ -1417,7 +1470,6 @@ class MouseFilterObj(QtCore.QObject):  # And this one
     def __init__(self, parent):
         QtCore.QObject.__init__(self)
         self.parent = parent
-        self.isRectangleOpen = False
 
     def eventFilter(self, obj, event):
         # print(event.type())
@@ -1425,26 +1477,22 @@ class MouseFilterObj(QtCore.QObject):  # And this one
         if event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
             if event.button() == QtCore.Qt.LeftButton:
                 self.parent.releaseInScene(event.scenePos())
-            # self.isRectangleOpen = not self.isRectangleOpen
             elif event.button() == QtCore.Qt.MiddleButton:
                 self.parent.seekSound(event.scenePos().x())
 
             self.parent.update_info_viewer()
 
-            # if self.isRectangleOpen:
-        if event.type() == QtCore.QEvent.GraphicsSceneMousePress:
+        elif event.type() == QtCore.QEvent.GraphicsSceneMousePress:
             if event.button() == QtCore.Qt.LeftButton:
                 self.parent.clickInScene(event.scenePos())
-            # else:
-            #     self.parent.closeSceneRectangle()
 
-        if event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
+        elif event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
             self.parent.show_position(event.scenePos())
             if self.parent.isRectangleOpen:
                 self.parent.resizeSceneRectangle(int(event.scenePos().x()),
                                                  int(event.scenePos().y()))
 
-        if event.type() == QtCore.QEvent.GraphicsSceneWheel:
+        elif event.type() == QtCore.QEvent.GraphicsSceneWheel:
             if event.modifiers() & QtCore.Qt.CTRL:
                 if event.delta() > 0:
                     self.parent.zoom(1.1, event.scenePos())
@@ -1467,9 +1515,15 @@ class KeyboardFilterObj(QtCore.QObject):
             if event.key() == QtCore.Qt.Key_Tab:
                 self.parent.toggleLabels()
             elif event.key() == QtCore.Qt.Key_Left:
-                self.parent.load_previous()
+                if event.modifiers() & QtCore.Qt.ControlModifier:
+                    self.parent.load_previous()
+                else:
+                    self.parent.select_previous_tag()
             elif event.key() == QtCore.Qt.Key_Right:
-                self.parent.load_next()
+                if event.modifiers() & QtCore.Qt.ControlModifier:
+                    self.parent.load_next()
+                else:
+                    self.parent.select_next_tag()
             elif event.key() == QtCore.Qt.Key_Shift:
                 if self.parent.createOn:
                     self.parent.toggleCreateMode()

@@ -664,7 +664,30 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="pb_toggle_back">
+             <widget class="QPushButton" name="pb_first_tag">
+              <property name="toolTip">
+               <string>Go to first annotation</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/first</normaloff>:/icons/first</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pb_previous_tag">
               <property name="toolTip">
                <string>Previous annotation</string>
               </property>
@@ -687,7 +710,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pb_toggle">
+             <widget class="QPushButton" name="pb_next_tag">
               <property name="toolTip">
                <string>Next annotation</string>
               </property>
@@ -697,6 +720,29 @@
               <property name="icon">
                <iconset resource="../resources.qrc">
                 <normaloff>:/icons/forward</normaloff>:/icons/forward</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pb_last_tag">
+              <property name="toolTip">
+               <string>Go to last annotation</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../resources.qrc">
+                <normaloff>:/icons/last</normaloff>:/icons/last</iconset>
               </property>
               <property name="iconSize">
                <size>

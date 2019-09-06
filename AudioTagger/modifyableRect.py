@@ -62,7 +62,6 @@ class Test(QtWidgets.QMainWindow):
     def lineEditChanged(self):
         print("lineEditChanged: " + self.lastLabelRectContext)
         self.menu.hide()
-        print(self.cle.text())
 
     def registerLastLabelRectContext(self, labelRect):
         self.lastLabelRectContext = labelRect
@@ -91,7 +90,6 @@ class Test(QtWidgets.QMainWindow):
 
     def buttonClick(self):
         newHeight = np.random.randint(1, 10)
-        print(newHeight)
         geo = self.rect.rect()
         geo.setHeight(newHeight)
         self.rect.setRect(geo)
@@ -496,7 +494,6 @@ class InfoRectItem(ResizeableGraphicsRectItem):
 
     def setRect(self, *args, **kwargs):
         super(InfoRectItem, self).setRect(*args, **kwargs)
-        print(self.rect().x())
         if self.infoTextItem:
             self.infoTextItem.setPos(
                 self.rect().x(), self.rect().y() - 20)

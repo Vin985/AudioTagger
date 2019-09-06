@@ -1,24 +1,41 @@
-1: !!python/object:AudioTagger.tags.Tag
+AMGP: &id001 !!python/object:AudioTagger.tags.Tag
+  color: 4287138437
+  keyseq: ''
+  name: AMGP
+  related:
+  - &id003 !!python/object:AudioTagger.tags.Tag
+    color: 4294901887
+    keyseq: ''
+    name: Bird
+    related:
+    - &id002 !!python/object:AudioTagger.tags.Tag
+      color: 4294764879
+      keyseq: ''
+      name: Biophony
+      related: []
+AMGP_1: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  id: 1
   keyseq: '1'
-  name: Bird
-  related: []
-4: !!python/object:AudioTagger.tags.Tag
-  color: 4294764879
-  id: 4
+  name: AMGP_1
+  related:
+  - *id001
+AMGP_2: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
   keyseq: '2'
-  name: Biophony
-  related: []
-5: !!python/object:AudioTagger.tags.Tag
+  name: AMGP_2
+  related:
+  - *id001
+Biophony: *id002
+Bird: *id003
+HOLA: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  id: 5
   keyseq: ''
-  name: test
-  related: []
-6: !!python/object:AudioTagger.tags.Tag
+  name: HOLA
+  related:
+  - *id003
+SESA: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  id: 6
   keyseq: ''
-  name: tut
-  related: []
+  name: SESA
+  related:
+  - *id003

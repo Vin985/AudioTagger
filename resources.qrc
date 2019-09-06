@@ -15,5 +15,7 @@
         <file alias="delete">icons/fa-trash.svg</file>
         <file alias="add">icons/fa-plus.svg</file>
         <file alias="edit">icons/fa-edit.svg</file>
+        <file alias="first">icons/fa_first.svg</file>
+        <file alias="last">icons/fa-last.svg</file>
     </qresource>
 </RCC>
