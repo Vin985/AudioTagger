@@ -15,13 +15,13 @@ AMGP: &id001 !!python/object:AudioTagger.tags.Tag
       related: []
 AMGP_1: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '1'
+  keyseq: ''
   name: AMGP_1
   related:
   - *id001
 AMGP_2: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '2'
+  keyseq: ''
   name: AMGP_2
   related:
   - *id001
@@ -33,9 +33,39 @@ HOLA: !!python/object:AudioTagger.tags.Tag
   name: HOLA
   related:
   - *id003
-SESA: !!python/object:AudioTagger.tags.Tag
+PUSA: &id004 !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: ''
+  name: PUSA
+  related:
+  - *id003
+PUSA_1: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: '1'
+  name: PUSA_1
+  related:
+  - *id004
+SESA: &id005 !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
   name: SESA
   related:
   - *id003
+SESA_1: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: ''
+  name: SESA_1
+  related:
+  - *id005
+SESA_2: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: '2'
+  name: SESA_2
+  related:
+  - *id005
+SESA_3: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: '3'
+  name: SESA_3
+  related:
+  - *id005
