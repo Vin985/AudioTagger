@@ -115,7 +115,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.defineShortcuts()
 
         self.labelRects = []
-        self.rectClasses = dict()
+        #self.rectClasses = dict()
         self.labelRect = None
 
         self.cm = CM.getColourMap()
@@ -350,7 +350,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         self.lastLabelRectContext.setColor(self.labels.get_color(c))
         self.lastLabelRectContext.setInfoString(c)
-        self.rectClasses[self.lastLabelRectContext] = c
+        # self.rectClasses[self.lastLabelRectContext] = c
         self.contentChanged = True
 
     def registerLastLabelRectContext(self, labelRect):
@@ -452,6 +452,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         # cd.show()
         td = TagDialog(self, self.labels)
         td.settingsSig.connect(self.updateSettings)
+        td.update_label_name.connect(self.update_label_name)
         td.show()
 
     def changeLabelIdx(self, i):
@@ -504,6 +505,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         # print("in update settings")
         self.update_labels_Ui()
         self.saveSettingsLocal()
+
+    def update_label_name(self, old, new):
+        for labelRect in self.labelRects:
+            if labelRect.infoString == old:
+                labelRect.setInfoString(new)
+                print("replacing: " + old + "by: " + new)
 
     def change_file(self, item, column):
         file = item.text(0)
@@ -956,7 +963,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         # self.labelRect.rectChangedSignal.connect(self.labelRectChangedSlot)
         self.overviewScene.addItem(self.labelRect)
 
-        self.rectClasses[self.labelRect] = self.ui.cb_labelType.currentText()
+        # self.rectClasses[self.labelRect] = self.ui.cb_labelType.currentText()
 
         self.rectOrgX = x
         self.rectOrgY = y
@@ -1024,7 +1031,8 @@ class AudioTagger(QtWidgets.QMainWindow):
             label = self.labelRects[self.activeLabel]
             tag = self.ui.cb_labelType.itemText(new_index)
             label.setInfoString(tag)
-            self.rectClasses[label] = tag
+            # label.infoString = tag
+            # self.rectClasses[label] = tag
 
     ################### LABELS (SAVE/LOAD/NAVIGATION) #########################
 
@@ -1080,7 +1088,6 @@ class AudioTagger(QtWidgets.QMainWindow):
                  labelRect.sceneBoundingRect().width(),
                  labelRect.sceneBoundingRect().height()]
             # rect = [r.x(), r.y(), r.width(), r.height()]
-            c = self.rectClasses[labelRect]
 
             # freqStep = float(self.s4p.wav[0]) / self.specHeight / 2.0
             # sr = scipy.io.wavfile.read(filepath)[0]              # sampling rate
@@ -1103,7 +1110,8 @@ class AudioTagger(QtWidgets.QMainWindow):
             # AmpSD LabelArea_DataPoints
             label = [
                 self.current_file,  # filename
-                self.rectClasses[labelRect],                    # Label
+                # self.rectClasses[labelRect],                    # Label
+                labelRect.infoString,
                 dt.datetime.now().isoformat(),                  # LabelTimeStamp
                 self.specNStepMod,                              # Spec_NStep
                 self.specNWinMod,                               # Spec_NWin
@@ -1175,7 +1183,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.overviewScene.addItem(labelRect)
 
             self.labelRects += [labelRect]
-            self.rectClasses[labelRect] = c
+            # self.rectClasses[labelRect] = c
         self.labelRects.sort(key=self.getLabelTimeValue)
 
     def saveSceneRects(self, checked=False, to_append="-sceneRect"):
@@ -1317,8 +1325,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         if self.activeLabel is not None:
             old_tag = self.labelRects[self.activeLabel]
             if old_tag:
-                penCol = self.labels.get_color(
-                    self.rectClasses[old_tag])
+                penCol = self.labels.get_color(old_tag.infoString)
+                # self.rectClasses[old_tag])
                 pen = QtGui.QPen(penCol)
                 old_tag.setPen(pen)
 

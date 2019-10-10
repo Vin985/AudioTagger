@@ -29,6 +29,7 @@ from AudioTagger.tag_dialog_ui import Ui_TagDialog
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
     settingsSig = QtCore.Signal(list)
+    update_label_name = QtCore.Signal(str, str)
 
     def __init__(self, parent, tag_list):
         super().__init__(parent)
@@ -108,9 +109,11 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
 
     def new_name(self):
         new = self.lineEditFinished("name")
+        old = self.current_tag.name
         if new != self.current_tag.name:
-            self.tags.update_name(self.current_tag.name, new)
-            self.tag_list.currentItem().setText(self.current_tag.name)
+            self.update_label_name.emit(old, new)
+            self.tags.update_name(old, new)
+            self.tag_list.currentItem().setText(new)
 
     def color_clicked(self):
         self.select_color()

@@ -3,26 +3,37 @@ AMGP: &id001 !!python/object:AudioTagger.tags.Tag
   keyseq: ''
   name: AMGP
   related:
-  - &id003 !!python/object:AudioTagger.tags.Tag
+  - &id004 !!python/object:AudioTagger.tags.Tag
     color: 4294901887
     keyseq: ''
-    name: Bird
+    name: Shorebird
     related:
-    - &id002 !!python/object:AudioTagger.tags.Tag
-      color: 4294764879
+    - &id003 !!python/object:AudioTagger.tags.Tag
+      color: 4294901887
       keyseq: ''
-      name: Biophony
-      related: []
-AMGP_1: !!python/object:AudioTagger.tags.Tag
+      name: Bird
+      related:
+      - &id002 !!python/object:AudioTagger.tags.Tag
+        color: 4294764879
+        keyseq: ''
+        name: Biophony
+        related: []
+AMGP_1(tu-tit): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
-  name: AMGP_1
+  keyseq: '1'
+  name: AMGP_1(tu-tit)
   related:
   - *id001
-AMGP_2: !!python/object:AudioTagger.tags.Tag
+AMGP_2(tuuut): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
-  name: AMGP_2
+  keyseq: '2'
+  name: AMGP_2(tuuut)
+  related:
+  - *id001
+AMGP_3(other): !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: '3'
+  name: AMGP_3(other)
   related:
   - *id001
 Biophony: *id002
@@ -33,39 +44,45 @@ HOLA: !!python/object:AudioTagger.tags.Tag
   name: HOLA
   related:
   - *id003
-PUSA: &id004 !!python/object:AudioTagger.tags.Tag
+PUSA: &id005 !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
   name: PUSA
   related:
-  - *id003
+  - *id004
 PUSA_1: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '1'
+  keyseq: ''
   name: PUSA_1
   related:
-  - *id004
-SESA: &id005 !!python/object:AudioTagger.tags.Tag
+  - *id005
+SESA: &id006 !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
   name: SESA
   related:
-  - *id003
+  - *id004
 SESA_1: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
   name: SESA_1
   related:
-  - *id005
+  - *id006
 SESA_2: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '2'
+  keyseq: ''
   name: SESA_2
   related:
-  - *id005
+  - *id006
 SESA_3: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '3'
+  keyseq: ''
   name: SESA_3
   related:
-  - *id005
+  - *id006
+Shorebird: *id004
+test1: !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: ''
+  name: test1
+  related: []
