@@ -1,3 +1,4 @@
+import configparser
 import csv
 import datetime as dt
 import os
@@ -60,11 +61,14 @@ class AudioTagger(QtWidgets.QMainWindow):
         if labelfolder:
             self.labelfolder = labelfolder
 
+        self.local_config = None
+
         self.current_file = None
         self.filelist = []
         self.label_filelist = []
         self.hide_done = False
 
+        # Sound parameters
         self.s4p = S4P.Sound4Python()
         self.soundSec = 0.0
         self.soundDurationSec = 0.0
@@ -140,12 +144,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.show()
         # self.ui.cb_labelType.addItems(self.labelTypes.keys())
 
-        self.openFolder(self.basefolder, self.labelfolder, self.current_file)
-        self.init_tree()
+        self.open_folder(self.basefolder, self.labelfolder, self.current_file)
+
         # Select opened file in tree
-        current_item = self.ui.file_tree.findItems(
-            self.current_file, QtCore.Qt.MatchExactly, 0)[0]
-        self.ui.file_tree.setCurrentItem(current_item)
+        # current_item = self.ui.file_tree.findItems(
+        #     self.current_file, QtCore.Qt.MatchExactly, 0)[0]
+        # self.ui.file_tree.setCurrentItem(current_item)
 
         self.tracker.deactivate()
         self.deactivateAllLabelRects()
@@ -207,7 +211,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.file_tree.currentItemChanged.connect(self.change_file)
 
         # menu
-        self.ui.actionOpen_folder.triggered.connect(self.openFolder)
+        self.ui.actionOpen_folder.triggered.connect(self.open_folder)
         self.ui.actionClass_settings.triggered.connect(self.openClassSettings)
         self.ui.actionExport_settings.triggered.connect(self.exportSettings)
 
@@ -229,6 +233,16 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.soundSpeeds.index(self.soundSpeed))
 
     def init_tree(self):
+        self.ui.file_tree.clear()
+
+        # Display empty tree if no files are found
+        if not self.filelist:
+            item = QtWidgets.QTreeWidgetItem()
+            item.setText(0,
+                         "No files found in folder. Please select another folder")
+            self.ui.file_tree.addTopLevelItem(item)
+            return
+
         tree_items = []
         for file in self.filelist:
             filename = os.path.basename(file)
@@ -418,7 +432,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         # settings.endGroup()
         # self.labels = res
 
-        self.current_file = settings.value("current_file", None)
+        #self.current_file = settings.value("current_file", None)
 
         self.update_labels_Ui()
 
@@ -430,6 +444,35 @@ class AudioTagger(QtWidgets.QMainWindow):
         # Special case if there is only one file, will be stored as string
         if type(self.files_done) is str:
             self.files_done = [self.files_done]
+
+    def load_local_config(self):
+        local_conf = self.basefolder + "/config.conf"
+        if os.path.isfile(local_conf):
+            print("conf file exists")
+            config = configparser.ConfigParser()
+            config.read(local_conf)
+            files_done = config['files'].get("files_done", [])
+            if type(files_done) is str:
+                self.files_done = files_done.split(",")
+            self.current_file = config['files'].get("current_file", None)
+            if not self.current_file in self.filelist:
+                self.current_file = None
+            self.local_config = config
+        else:
+            self.local_config = None
+
+    def save_local_config(self):
+        local_conf = self.basefolder + "/config.conf"
+        if not self.local_config:
+            print("config does not loaded")
+            config = configparser.ConfigParser()
+            config.add_section("files")
+            self.local_config = config
+        self.local_config.set("files", "files_done", ",".join(self.files_done))
+        if self.current_file:
+            self.local_config.set("files", "current_file", self.current_file)
+        with open(local_conf, 'w') as conf_file:
+            self.local_config.write(conf_file)
 
     def exportSettings(self):
         savePath = QtWidgets.QFileDialog().getSaveFileName(self,
@@ -514,6 +557,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def change_file(self, item, column):
         file = item.text(0)
+        print(file)
         if file != self.current_file:
             self.load_file(file)
 
@@ -639,8 +683,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def resetView(self):
         self.clearSceneRects()
-        self.loadSceneRects()
-        self.updateSpecLabel()
+
         if self.specNStepMod == 0.01 and self.specNWinMod == 0.03:
             self.ui.cb_specType.setCurrentIndex(0)
         elif self.specNStepMod == 0.001 and self.specNWinMod == 0.003:
@@ -659,16 +702,22 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.soundSec = 0.0
         self.updateSoundMarker()
 
-        file_path = os.path.join(self.basefolder, self.current_file)
-        self.loadSound(file_path)
-        self.setWindowTitle(
-            "Audio Tagger " + os.path.basename(file_path))
+        if self.current_file:
+            self.loadSceneRects()
+            self.updateSpecLabel()
+            file_path = os.path.join(self.basefolder, self.current_file)
+            self.loadSound(file_path)
+            self.setWindowTitle(
+                "Audio Tagger " + os.path.basename(file_path))
 
         self.scrollView.horizontalScrollBar().triggerAction(
             QtWidgets.QAbstractSlider.SliderToMinimum)
         self.ui.btn_done.setChecked(self.current_file in self.files_done)
 
     def load_file(self, file_name):
+        if not file_name:
+            if self.filelist:
+                file_name = self.filelist[0]
         canProceed = self.checkIfSavingNecessary()
         if not canProceed:
             return
@@ -677,6 +726,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.current_file = file_name
         self.resetView()
 
+        self.save_local_config()
         settings = QtCore.QSettings()
         settings.setValue("current_file", self.current_file)
         self.setZoomBoundingBox()
@@ -740,7 +790,11 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         return fileList
 
-    def openFolder(self, wavFolder=None, labelFolder=None, current_file=None):
+    def open_folder(self, wavFolder=None, labelFolder=None, current_file=None):
+        # reset current file as we are changing directory
+        self.current_file = None
+
+        # Open
         if wavFolder is None:
             dialog = QtWidgets.QFileDialog()
             dialog.setFileMode(QtWidgets.QFileDialog.Directory)
@@ -751,6 +805,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.filelist = self.get_file_list(wavFolder, WAV_EXTENSIONS)
         self.basefolder = wavFolder
 
+        self.load_local_config()
+
         if labelFolder is None:
             dialog = QtWidgets.QFileDialog()
             dialog.setFileMode(QtWidgets.QFileDialog.Directory)
@@ -759,18 +815,18 @@ class AudioTagger(QtWidgets.QMainWindow):
                                                       os.path.split(wavFolder)[0])
             self.labelfolder = labelFolder
 
-        if not self.filelist:
-            return
+        # if not self.filelist:
+        #     return
 
         self.saveFoldersLocal()
 
         # self.ui.cb_file.clear()
         # self.ui.cb_file.addItems(self.filelist)
 
-        if current_file:
-            self.load_file(current_file)
-        else:
-            self.load_file(self.filelist[0])
+        self.load_file(current_file)
+
+        self.init_tree()
+        # TODO: reinit tree
 
     ####################### SPECTROGRAM #############################
 
@@ -1373,8 +1429,9 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.files_done.remove(self.current_file)
             self.ui.file_tree.currentItem().setBackground(0,
                                                           QtGui.QBrush(QtGui.QColor(self.BG_COLOR_WIP)))
-        settings = QtCore.QSettings()
-        settings.setValue("files_done", self.files_done)
+        # settings = QtCore.QSettings()
+        # settings.setValue("files_done", self.files_done)
+        self.save_local_config()
 
     def checkIfSavingNecessary(self):
         if self.contentChanged:
@@ -1416,6 +1473,9 @@ class AudioTagger(QtWidgets.QMainWindow):
         return d
 
     def update_info_viewer(self):
+        if not self.current_file:
+            return
+
         s = ''
         # s += "<p><b>File:</b> {}</p>".format(self.filelist[self.fileidx])
         curTime = "%5.3f" % self.soundSec

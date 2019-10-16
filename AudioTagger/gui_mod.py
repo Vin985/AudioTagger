@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'gui_mod.ui',
 # licensing of 'gui_mod.ui' applies.
 #
-# Created: Wed Sep  4 13:06:56 2019
+# Created: Tue Oct 15 16:32:38 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1070, 660)
+        MainWindow.resize(1152, 660)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -421,7 +421,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.frame_2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1070, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1152, 23))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -429,6 +429,9 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.toolBar = QtWidgets.QToolBar(MainWindow)
+        self.toolBar.setObjectName("toolBar")
+        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionOpen_folder = QtWidgets.QAction(MainWindow)
         self.actionOpen_folder.setObjectName("actionOpen_folder")
         self.actionClass_settings = QtWidgets.QAction(MainWindow)
@@ -443,6 +446,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExport_settings)
         self.menuFile.addAction(self.actionImport_settings)
         self.menubar.addAction(self.menuFile.menuAction())
+        self.toolBar.addAction(self.actionOpen_folder)
+        self.toolBar.addAction(self.actionClass_settings)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -476,6 +481,7 @@ class Ui_MainWindow(object):
         self.label_9.setText(QtWidgets.QApplication.translate("MainWindow", "Active label:", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("MainWindow", "File Done:", None, -1))
         self.menuFile.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
+        self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
         self.actionOpen_folder.setText(QtWidgets.QApplication.translate("MainWindow", "Open folder", None, -1))
         self.actionClass_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Class settings", None, -1))
         self.actionExport_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Export settings", None, -1))

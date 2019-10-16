@@ -81,6 +81,18 @@ SESA_3: !!python/object:AudioTagger.tags.Tag
   related:
   - *id006
 Shorebird: *id004
+WRSA: &id007 !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: '4'
+  name: WRSA
+  related:
+  - *id004
+WRSA_1(boingboingboing): !!python/object:AudioTagger.tags.Tag
+  color: 4294901887
+  keyseq: ''
+  name: WRSA_1(boingboingboing)
+  related:
+  - *id007
 test1: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
