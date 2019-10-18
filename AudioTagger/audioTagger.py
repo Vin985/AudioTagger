@@ -304,7 +304,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape),
                             self, self.abortSceneRectangle)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
-                            self, self.play_pause_sound)
+                            self, self.ui.pb_play.click)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_S),
                             self, self.activateSoundSeeking)
 
