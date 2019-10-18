@@ -9,9 +9,7 @@ from collections import OrderedDict
 import numpy as np
 import qimage2ndarray as qim2np
 import scipy.io.wavfile
-# from AudioTagger.gui_auto import Ui_MainWindow
 from PySide2 import QtCore, QtGui, QtWidgets
-from sound4python import sound4python as S4P
 
 import AudioTagger.colourMap as CM
 import AudioTagger.modifyableRect as MR
@@ -65,8 +63,6 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         # Sound parameters
         self.sound_player = SoundPlayer()
-
-        self.s4p = S4P.Sound4Python()
         self.soundSec = 0.0
         self.soundDurationSec = 0.0
         self.lastMarkerUpdate = None
@@ -75,8 +71,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.playing = False
         self.soundTimer = QtCore.QTimer()
         self.soundTimer.timeout.connect(self.updateSoundPosition)
-        self.soundSpeed = 1
-        self.soundSpeeds = [0.1, 0.125, 0.2, 0.25, 0.5, 1, 2]
+        self.sound_speed = 1
+        self.sound_speeds = [0.1, 0.125, 0.2, 0.25, 0.5, 1, 2]
         self.mouse_scene_y = None
         self.mouse_scene_x = None
 
@@ -148,12 +144,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.deactivateAllLabelRects()
         self.tracker.deactivate()
 
-    def init_thread(self):
-        self.sound_player.moveToThread(self.sound_thread)
-        self.sound_thread.finished.connect(self.sound_player.deleteLater)
-        self.destroyed.connect(self.sound_thread.quit)
-        self.sound_thread.start()
-
     def setFilters(self):
         self.mouseEventFilter = MouseFilterObj(self)
         self.KeyboardFilter = KeyboardFilterObj(self)
@@ -202,9 +192,9 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         self.ui.cb_playbackSpeed.clear()
         self.ui.cb_playbackSpeed.insertItems(
-            0, [str(x) for x in self.soundSpeeds])
+            0, [str(x) for x in self.sound_speeds])
         self.ui.cb_playbackSpeed.setCurrentIndex(
-            self.soundSpeeds.index(self.soundSpeed))
+            self.sound_speeds.index(self.sound_speed))
 
     ######################## GUI STUFF ########################
 
@@ -228,7 +218,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         if canProceed:
             event.accept()
             self.sound_player.terminate()
-            self.sound_thread.quit()
         else:
             event.ignore()
 
@@ -562,7 +551,8 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.load_file(file)
 
     def selectPlaybackSpeed(self, idx):
-        self.changePlaybackSpeed(float(self.ui.cb_playbackSpeed.itemText(idx)))
+        self.change_playback_speed(
+            float(self.ui.cb_playbackSpeed.itemText(idx)))
 
     def selectSpectrogramMode(self, idx):
         canProceed = self.checkIfSavingNecessary()
@@ -613,9 +603,9 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.scrollingWithoutUser = False
             self.setZoomBoundingBox(updateCenter=False)
 
-    def changePlaybackSpeed(self, speed):
-        self.soundSpeed = speed
-        self.s4p.changePlaybackSpeed(self.soundSpeed)
+    def change_playback_speed(self, speed):
+        self.sound_speed = speed
+        self.sound_player.change_speed(self.sound_speed)
 
     def activateSoundSeeking(self):
         if not self.playing:
@@ -628,7 +618,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         currentTime = dt.datetime.now()
         increment = (currentTime - self.lastMarkerUpdate).total_seconds()
-        self.soundSec += increment * self.soundSpeed
+        self.soundSec += increment * self.sound_speed
         self.lastMarkerUpdate = currentTime
 
         self.updateSoundMarker()
@@ -637,10 +627,7 @@ class AudioTagger(QtWidgets.QMainWindow):
     def play_sound(self):
         self.playing = True
         self.ui.pb_play.setToolTip("Pause")
-    #    self.ui.pb_play.load(self.ui.pb_play.getIconFolder() + "/fa-pause.svg")
-        # self.s4p.play()
         self.sound_player.play()
-        # self.soundSec = self.s4p.seekSec
 
         self.lastMarkerUpdate = dt.datetime.now()
         self.soundTimer.start(100)
@@ -648,13 +635,7 @@ class AudioTagger(QtWidgets.QMainWindow):
     def pause_sound(self):
         self.playing = False
         self.sound_player.pause()
-        # self.ui.pb_play.setText("play")
         self.ui.pb_play.setToolTip("Play")
-    #    self.ui.pb_play.load(self.ui.pb_play.getIconFolder() + "/fa-play.svg")
-        # try:
-        #     self.s4p.pause()
-        # except ValueError:
-        #     pass
         self.soundTimer.stop()
 
     def play_pause_sound(self):
@@ -680,9 +661,6 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def loadSound(self, wavfile):
         self.sound_player.load(wavfile)
-        # self.s4p.loadWav(wavfile)
-        # if self.soundSpeed != 1:
-        # self.s4p.changePlaybackSpeed(self.soundSpeed)
 
         ################### WAV FILE LOAD  ######################
 

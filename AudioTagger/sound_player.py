@@ -13,21 +13,26 @@ class SoundPlayer():
         self.nchannels = 0
         self.sr = 0
         self.playing = False
+        self.speed = 1
 
     def __del__(self):
         self.terminate()
 
+    def open_stream(self):
+        self.stream = self.pa.open(format=self.pa.get_format_from_width(self.wave_file.getsampwidth()),
+                                   channels=self.nchannels,
+                                   rate=int(self.sr * self.speed),
+                                   output=True,
+                                   start=False,
+                                   stream_callback=self.read_frames)
+
     def load(self, file_path):
+        self.close_file()
         try:
             self.wave_file = wave.open(file_path, 'rb')
             self.nchannels = self.wave_file.getnchannels()
             self.sr = self.wave_file.getframerate()
-            self.stream = self.pa.open(format=self.pa.get_format_from_width(self.wave_file.getsampwidth()),
-                                       channels=self.nchannels,
-                                       rate=self.sr,
-                                       output=True,
-                                       start=False,
-                                       stream_callback=self.read_frames)
+            self.open_stream()
         except Exception as e:
             print("Error, could not load file: " + file_path)
 
@@ -53,11 +58,22 @@ class SoundPlayer():
             self.stream.stop_stream()
             self.wave_file.rewind()
 
-    def terminate(self):
+    def close_file(self):
+        if self.wave_file:
+            self.wave_file.close()
         if self.stream:
             self.stream.close()
+
+    def terminate(self):
+        self.close_file()
         if self.pa:
             self.pa.terminate()
 
     def seek(self, pos):
-        self.wave_file.setpos(int(pos * self.sr))
+        pos_frame = int(pos * self.sr)
+        self.wave_file.setpos(pos_frame)
+
+    def change_speed(self, speed):
+        self.speed = speed
+        self.stream.close()
+        self.open_stream()
