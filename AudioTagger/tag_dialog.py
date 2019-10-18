@@ -1,30 +1,9 @@
-__author__ = 'peter'
-
 import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from AudioTagger.manage_related_dialog import ManageRelatedDialog
 from AudioTagger.tag_dialog_ui import Ui_TagDialog
-
-# class TagListModel(QtGui.QStandardItemModel):
-#
-#     def __init__(self, parent, tags):
-#         super().__init__(0, 0, parent)
-#         print(tags)
-#         self.tags = tags
-#         self.create_model()
-#
-#     def create_model(self):
-#         print(self.tags.tags)
-#         for tag in self.tags.tags.values():
-#             self.add_item(tag)
-#
-#     def add_item(self, tag):
-#         item = QtGui.QStandardItem(tag.name)
-#         item.setData(tag.id)
-#         self.appendRow(item)
-#         return item
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
@@ -140,11 +119,3 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         print("sending settings")
         self.tags.remove_empty()
         self.settingsSig.emit(self.tags)
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-
-    w = TagDialog(None)
-
-    sys.exit(app.exec_())
