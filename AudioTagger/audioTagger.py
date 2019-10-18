@@ -13,11 +13,10 @@ import scipy.io.wavfile
 from PySide2 import QtCore, QtGui, QtWidgets
 from sound4python import sound4python as S4P
 
-import AudioTagger.classDialog as CD
 import AudioTagger.colourMap as CM
 import AudioTagger.modifyableRect as MR
-# from AudioTagger.main_gui import Ui_MainWindow
-from AudioTagger.gui_mod import Ui_MainWindow
+from AudioTagger.audio_tagger_ui import Ui_MainWindow
+from AudioTagger.sound_player import SoundPlayer
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
 
