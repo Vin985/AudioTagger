@@ -36,7 +36,9 @@ FORMS += \
     AudioTagger/classDialog.ui \
     AudioTagger/tag_form.ui \
     AudioTagger/classDialog2.ui \
-    AudioTagger/selection_list.ui
+    AudioTagger/selection_list.ui \
+    AudioTagger/tag_dialog.ui \
+    AudioTagger/manage_related_dialog.ui
 
 RESOURCES += \
     resources.qrc
