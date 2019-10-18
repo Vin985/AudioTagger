@@ -31,23 +31,18 @@ class AudioTagger(QtWidgets.QMainWindow):
     BG_COLOR_DONE = "lightgreen"
     BG_COLOR_WIP = "peachpuff"
 
-    def __init__(self, basefolder=None, labelfolder=None, labelTypes=None, test=False,
+    def __init__(self, basefolder=None, labelfolder=None, labelTypes=None,
                  ignoreSettings=False):
         super(AudioTagger, self).__init__()
+
         # Usual setup stuff. Set up the user interface from Designer
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        if test:
-            return
-
+        # Set Event filters
         self.setFilters()
 
-        self.mouseInOverview = False
-
-        self.horzScrollbarValue = 0
-        self.vertScrollbarValue = 0
-
+        # Working folders and files
         if not ignoreSettings:
             self.loadFoldersLocal()
         else:
@@ -55,19 +50,22 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.labelfolder = None
             self.files_done = []
 
+        # Overwrite settings if provided by command line
         if basefolder:
             self.basefolder = basefolder
         if labelfolder:
             self.labelfolder = labelfolder
 
+        # local config file
         self.local_config = None
-
         self.current_file = None
         self.filelist = []
         self.label_filelist = []
         self.hide_done = False
 
         # Sound parameters
+        self.sound_player = SoundPlayer()
+
         self.s4p = S4P.Sound4Python()
         self.soundSec = 0.0
         self.soundDurationSec = 0.0
@@ -82,23 +80,22 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.mouse_scene_y = None
         self.mouse_scene_x = None
 
-        self.createOn = True
-
+        # Spectrogram settings
         self.audibleRange = True
         self.specNStepMod = 0.01    # horizontal resolution of spectogram 0.01
         self.specNWinMod = 0.03     # vertical resolution of spectogram 0.03
-
-        self.scrollingWithoutUser = False
-
-        self.activeLabel = None
         self.specHeight = 360
         self.specWidth = 20000
+
+        # Initialize gui variable
+        self.mouseInOverview = False
+        self.horzScrollbarValue = 0
+        self.vertScrollbarValue = 0
+        self.scrollingWithoutUser = False
         self.contentChanged = False
         self.isDeletingRects = False
         self.yscale = 1
         self.xscale = 1
-
-        self.unconfiguredLabels = []
 
         self.bgImg = None
         self.tracker = None
@@ -110,24 +107,24 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.viewHeight = 0
         self.setupGraphicsView()
 
-        self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
-        self.scrollView.verticalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
-        self.installEventFilter(self.KeyboardFilter)
-
-        self.shortcuts = []
-        self.defineShortcuts()
-
-        self.labelRects = []
-        #self.rectClasses = dict()
-        self.labelRect = None
-
-        self.cm = CM.getColourMap()
+        # Rectangle drawing
         self.rectOrgX = None
         self.rectOrgY = None
         self.isRectangleOpen = False
 
-        # self.labelTypes = OrderedDict()
-        # self.labels = []
+        # Shortcuts
+        self.shortcuts = []
+        self.defineShortcuts()
+
+        # Color map
+        self.cm = CM.getColourMap()
+
+        # Label creation settings
+        self.createOn = True
+        self.activeLabel = None
+        self.unconfiguredLabels = []
+        self.labelRects = []
+        self.labelRect = None
         self.labels = Tags()
         self.setupLabelMenu()
         if labelTypes is None:
@@ -136,12 +133,10 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.contentChanged = False
         else:
             self.labels = labelTypes
-            # self.labelTypes = labelTypes
 
         self.configureElements()
-        self.connectElements()
+        self.link_events()
         self.show()
-        # self.ui.cb_labelType.addItems(self.labelTypes.keys())
 
         self.open_folder(self.basefolder, self.labelfolder, self.current_file)
 
@@ -150,18 +145,66 @@ class AudioTagger(QtWidgets.QMainWindow):
         #     self.current_file, QtCore.Qt.MatchExactly, 0)[0]
         # self.ui.file_tree.setCurrentItem(current_item)
 
-        self.tracker.deactivate()
         self.deactivateAllLabelRects()
+        self.tracker.deactivate()
 
-        self.createOn = True
-
-        # self.ui.pb_debug.setText("toggle to last")
+    def init_thread(self):
+        self.sound_player.moveToThread(self.sound_thread)
+        self.sound_thread.finished.connect(self.sound_player.deleteLater)
+        self.destroyed.connect(self.sound_thread.quit)
+        self.sound_thread.start()
 
     def setFilters(self):
         self.mouseEventFilter = MouseFilterObj(self)
         self.KeyboardFilter = KeyboardFilterObj(self)
         self.mouseInsideFilter = MouseInsideFilterObj(
             self.enterGV, self.leaveGV)
+        self.installEventFilter(self.KeyboardFilter)
+
+    def link_events(self):
+        # GUI elements
+        self.ui.pb_next.clicked.connect(self.load_next)
+        self.ui.pb_prev.clicked.connect(self.load_previous)
+        self.ui.pb_save.clicked.connect(self.saveSceneRects)
+        self.ui.pb_toggle_create.clicked.connect(self.toggleCreateMode)
+        self.ui.pb_previous_tag.clicked.connect(self.select_previous_tag)
+        self.ui.pb_next_tag.clicked.connect(self.select_next_tag)
+        self.ui.pb_first_tag.clicked.connect(self.select_first_tag)
+        self.ui.pb_last_tag.clicked.connect(self.select_last_tag)
+        self.ui.pb_play.clicked.connect(self.play_pause_sound)
+        self.ui.pb_stop.clicked.connect(self.stopSound)
+        self.ui.pb_seek.clicked.connect(self.activateSoundSeeking)
+        self.ui.cb_playbackSpeed.activated.connect(self.selectPlaybackSpeed)
+        self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
+        self.ui.cb_labelType.currentIndexChanged.connect(self.changeTag)
+        self.ui.btn_done.clicked.connect(self.set_file_done)
+
+        # Tree interaction
+        self.ui.file_tree.currentItemChanged.connect(self.change_file)
+
+        # menu
+        self.ui.actionOpen_folder.triggered.connect(self.open_folder)
+        self.ui.actionClass_settings.triggered.connect(self.openClassSettings)
+        self.ui.actionExport_settings.triggered.connect(self.exportSettings)
+
+        # Scroll bars
+        self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
+        self.scrollView.verticalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
+
+    def configureElements(self):
+        self.scrollView.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
+
+        w = self.specWidth
+        h = self.specHeight
+        self.sceneRect = QtCore.QRectF(0, 0, w, h)
+        self.overviewScene.setSceneRect(self.sceneRect)
+
+        self.ui.cb_playbackSpeed.clear()
+        self.ui.cb_playbackSpeed.insertItems(
+            0, [str(x) for x in self.soundSpeeds])
+        self.ui.cb_playbackSpeed.setCurrentIndex(
+            self.soundSpeeds.index(self.soundSpeed))
 
     ######################## GUI STUFF ########################
 
@@ -184,52 +227,10 @@ class AudioTagger(QtWidgets.QMainWindow):
         canProceed = self.checkIfSavingNecessary()
         if canProceed:
             event.accept()
+            self.sound_player.terminate()
+            self.sound_thread.quit()
         else:
             event.ignore()
-
-    def connectElements(self):
-        # GUI elements
-        self.ui.pb_next.clicked.connect(self.load_next)
-        self.ui.pb_prev.clicked.connect(self.load_previous)
-        self.ui.pb_save.clicked.connect(self.saveSceneRects)
-
-        self.ui.pb_previous_tag.clicked.connect(self.select_previous_tag)
-        self.ui.pb_next_tag.clicked.connect(self.select_next_tag)
-        self.ui.pb_first_tag.clicked.connect(self.select_first_tag)
-        self.ui.pb_last_tag.clicked.connect(self.select_last_tag)
-        # self.ui.pb_edit.clicked.connect(self.toggleEdit)
-        self.ui.pb_play.clicked.connect(self.playPauseSound)
-        self.ui.pb_stop.clicked.connect(self.stopSound)
-        self.ui.pb_seek.clicked.connect(self.activateSoundSeeking)
-        # self.ui.cb_file.activated.connect(self.selectFromFilelist)
-        self.ui.cb_playbackSpeed.activated.connect(self.selectPlaybackSpeed)
-        self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
-        self.ui.cb_labelType.currentIndexChanged.connect(self.changeTag)
-        self.ui.btn_done.clicked.connect(self.set_file_done)
-
-        self.ui.file_tree.currentItemChanged.connect(self.change_file)
-
-        # menu
-        self.ui.actionOpen_folder.triggered.connect(self.open_folder)
-        self.ui.actionClass_settings.triggered.connect(self.openClassSettings)
-        self.ui.actionExport_settings.triggered.connect(self.exportSettings)
-
-        self.ui.pb_toggle_create.clicked.connect(self.toggleCreateMode)
-
-    def configureElements(self):
-        self.scrollView.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
-
-        w = self.specWidth
-        h = self.specHeight
-        self.sceneRect = QtCore.QRectF(0, 0, w, h)
-        self.overviewScene.setSceneRect(self.sceneRect)
-
-        self.ui.cb_playbackSpeed.clear()
-        self.ui.cb_playbackSpeed.insertItems(
-            0, [str(x) for x in self.soundSpeeds])
-        self.ui.cb_playbackSpeed.setCurrentIndex(
-            self.soundSpeeds.index(self.soundSpeed))
 
     def init_tree(self):
         self.ui.file_tree.clear()
@@ -314,7 +315,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape),
                             self, self.abortSceneRectangle)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
-                            self, self.playPauseSound)
+                            self, self.play_pause_sound)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_S),
                             self, self.activateSoundSeeking)
 
@@ -621,8 +622,8 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.seekingSound = True
 
     def updateSoundPosition(self):
-        if not self.s4p.playing:
-            self.pauseSound()
+        if not self.sound_player.playing:
+            self.pause_sound()
             return
 
         currentTime = dt.datetime.now()
@@ -633,52 +634,57 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.updateSoundMarker()
         self.update_info_viewer()
 
-    def playSound(self):
+    def play_sound(self):
         self.playing = True
         self.ui.pb_play.setToolTip("Pause")
     #    self.ui.pb_play.load(self.ui.pb_play.getIconFolder() + "/fa-pause.svg")
-        self.s4p.play()
-        self.soundSec = self.s4p.seekSec
+        # self.s4p.play()
+        self.sound_player.play()
+        # self.soundSec = self.s4p.seekSec
 
         self.lastMarkerUpdate = dt.datetime.now()
         self.soundTimer.start(100)
 
-    def pauseSound(self):
+    def pause_sound(self):
         self.playing = False
+        self.sound_player.pause()
         # self.ui.pb_play.setText("play")
         self.ui.pb_play.setToolTip("Play")
     #    self.ui.pb_play.load(self.ui.pb_play.getIconFolder() + "/fa-play.svg")
-        try:
-            self.s4p.pause()
-        except ValueError:
-            pass
+        # try:
+        #     self.s4p.pause()
+        # except ValueError:
+        #     pass
         self.soundTimer.stop()
 
-    def playPauseSound(self):
+    def play_pause_sound(self):
         if self.playing:
-            self.pauseSound()
+            self.pause_sound()
         else:
-            self.playSound()
+            self.play_sound()
 
     def stopSound(self):
         self.playing = False
         self.ui.pb_play.setText("play")
-        self.s4p.stop()
+        self.sound_player.stop()
+        # self.s4p.stop()
         self.soundTimer.stop()
 
     def seekSound(self, graphicsPos):
         sec = graphicsPos * self.specNStepMod
-        self.s4p.seek(sec)
+        # self.s4p.seek(sec)
+        self.sound_player.seek(sec)
         self.soundSec = sec
         self.updateSoundMarker()
         self.seekingSound = False
 
     def loadSound(self, wavfile):
-        self.s4p.loadWav(wavfile)
-        if self.soundSpeed != 1:
-            self.s4p.changePlaybackSpeed(self.soundSpeed)
+        self.sound_player.load(wavfile)
+        # self.s4p.loadWav(wavfile)
+        # if self.soundSpeed != 1:
+        # self.s4p.changePlaybackSpeed(self.soundSpeed)
 
-    ################### WAV FILE LOAD  ######################
+        ################### WAV FILE LOAD  ######################
 
     def resetView(self):
         self.clearSceneRects()
@@ -1146,7 +1152,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
             # freqStep = float(self.s4p.wav[0]) / self.specHeight / 2.0
             # sr = scipy.io.wavfile.read(filepath)[0]              # sampling rate
-            sr = self.s4p.wav[0]
+            sr = self.sound_player.sr
             maxSigFreq = sr / 2.0                               # maxium signal frequency
             # step in freqency for every pixel in y-direction
             freqStep = self.specHeight / maxSigFreq
@@ -1485,7 +1491,7 @@ class AudioTagger(QtWidgets.QMainWindow):
                           self.soundDurationSec / self.overviewScene.width(), 3)
 
             y_pos = round((self.overviewScene.height() - self.mouse_scene_y) *
-                          self.s4p.samprate / (2 * self.overviewScene.height() * 1000), 3)
+                          self.sound_player.sr / (2 * self.overviewScene.height() * 1000), 3)
 
             s += "<p><b>Mouse position:</b> {time}s;  {freq}kHz</p>".format(
                 freq=y_pos, time=x_pos)
