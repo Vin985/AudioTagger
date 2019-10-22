@@ -251,6 +251,13 @@ class AudioTagger(QtWidgets.QMainWindow):
             tree_items.append(item)
         self.ui.file_tree.addTopLevelItems(tree_items)
 
+        # Select opened file in tree
+        res = self.ui.file_tree.findItems(
+            os.path.basename(self.current_file), QtCore.Qt.MatchExactly, 0)
+        if res:
+            current_item = res[0]
+            self.ui.file_tree.setCurrentItem(current_item)
+
     def setupGraphicsView(self):
         self.ui.gw_overview.setFrameStyle(QtWidgets.QFrame.NoFrame)
         self.overviewScene = QtWidgets.QGraphicsScene(self)
@@ -704,7 +711,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         canProceed = self.checkIfSavingNecessary()
         if not canProceed:
             return
-
+        print(self.filelist)
         self.unconfiguredLabels = []
         self.current_file = file_name
         self.resetView()
