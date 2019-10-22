@@ -28,6 +28,8 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     BG_COLOR_DONE = "lightgreen"
     BG_COLOR_WIP = "peachpuff"
+    LABEL_DEFAULT_COLOR = QtGui.QColor()
+    LABEL_DEFAULT_COLOR.setRgb(0, 0, 200)
 
     def __init__(self, basefolder=None, labelfolder=None, labelTypes=None,
                  ignoreSettings=False):
@@ -134,7 +136,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.link_events()
         self.show()
 
-        self.open_folder(self.basefolder, self.labelfolder, self.current_file)
+        self.open_folder(self.basefolder, self.labelfolder)
 
         # Select opened file in tree
         # current_item = self.ui.file_tree.findItems(
@@ -303,7 +305,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Left),
                             self, self.select_previous_tag)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Tab),
-                            self, self.toggleLabels)
+                            self, self.select_next_tag)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_S),
                             self, self.saveSceneRects)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete),
@@ -333,8 +335,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         wa.setDefaultWidget(self.cle)
 
         self.menu = QtWidgets.QMenu(self)
-        zAction = self.menu.addAction("send to back")
-        delAction = self.menu.addAction("delete")
+        zAction = self.menu.addAction("Send to back")
+        delAction = self.menu.addAction("Delete")
         self.menu.addAction(wa)
 
         delAction.triggered.connect(self.deleteLabel)
@@ -451,7 +453,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             if type(files_done) is str:
                 self.files_done = files_done.split(",")
             self.current_file = config['files'].get("current_file", None)
-            if not self.current_file in self.filelist:
+            if not os.path.join(self.basefolder, self.current_file) in self.filelist:
                 self.current_file = None
             self.local_config = config
         else:
@@ -553,7 +555,6 @@ class AudioTagger(QtWidgets.QMainWindow):
 
     def change_file(self, item, column):
         file = item.text(0)
-        print(file)
         if file != self.current_file:
             self.load_file(file)
 
@@ -632,6 +633,10 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.update_info_viewer()
 
     def play_sound(self):
+        if self.activeLabel is not None:
+            label = self.labelRects[self.activeLabel]
+            start = self.get_label_start_pos(label)
+            self.seekSound(start)
         self.playing = True
         self.ui.pb_play.setToolTip("Pause")
         self.sound_player.play()
@@ -707,11 +712,10 @@ class AudioTagger(QtWidgets.QMainWindow):
     def load_file(self, file_name):
         if not file_name:
             if self.filelist:
-                file_name = self.filelist[0]
+                file_name = os.path.basename(self.filelist[0])
         canProceed = self.checkIfSavingNecessary()
         if not canProceed:
             return
-        print(self.filelist)
         self.unconfiguredLabels = []
         self.current_file = file_name
         self.resetView()
@@ -780,7 +784,7 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         return fileList
 
-    def open_folder(self, wavFolder=None, labelFolder=None, current_file=None):
+    def open_folder(self, wavFolder=None, labelFolder=None):
         # reset current file as we are changing directory
         self.current_file = None
 
@@ -813,7 +817,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         # self.ui.cb_file.clear()
         # self.ui.cb_file.addItems(self.filelist)
 
-        self.load_file(current_file)
+        self.load_file(self.current_file)
 
         self.init_tree()
         # TODO: reinit tree
@@ -979,6 +983,10 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.toggleToItem(self.overviewScene.itemAt(scenePos, QtGui.QTransform()),
                               centerOnActiveLabel=False)
 
+    def select_label(self, scenePos):
+        self.toggleToItem(self.overviewScene.itemAt(scenePos, QtGui.QTransform()),
+                          centerOnActiveLabel=False)
+
     def releaseInScene(self, scenePos):
         if self.isRectangleOpen:
             self.closeSceneRectangle(scenePos)
@@ -1051,9 +1059,12 @@ class AudioTagger(QtWidgets.QMainWindow):
                                    newY, w, h)
 
     def abortSceneRectangle(self):
-        self.overviewScene.removeItem(self.labelRect)
+        if self.isRectangleOpen:
+            self.overviewScene.removeItem(self.labelRect)
+            self.isRectangleOpen = False
+        else:
+            self.select_tag(None)
         self.labelRect = None
-        self.isRectangleOpen = False
 
     def clearSceneRects(self):
         if self.labelRect:
@@ -1091,26 +1102,22 @@ class AudioTagger(QtWidgets.QMainWindow):
         Also takes account of boxes that are accidently drawn outside of the spectrogram.
 
         """
-        if r[2] > 0 and r[3] > 0:
+        # Get x coordinates. r[2] is the width of the box
+        if r[2] > 0:
             x1 = r[0]
             x2 = r[0] + r[2]
-            y1 = r[1]
-            y2 = r[1] + r[3]
-        elif r[2] < 0 and r[3] < 0:
-            x1 = r[0] + r[2]
-            x2 = r[0]
-            y1 = r[1] + r[3]
-            y2 = r[1]
-        elif r[2] > 0 and r[3] < 0:
-            x1 = r[0]
-            x2 = r[0] + r[2]
-            y1 = r[1] + r[3]
-            y2 = r[1]
         else:
             x1 = r[0] + r[2]
             x2 = r[0]
+
+        # Get y coordinates. r[3] is the height of the box
+        if r[3] > 0:
             y1 = r[1]
             y2 = r[1] + r[3]
+        else:
+            y1 = r[1] + r[3]
+            y2 = r[1]
+
         if x1 < 0:
             x1 = 0
         if y1 < 0:
@@ -1122,6 +1129,14 @@ class AudioTagger(QtWidgets.QMainWindow):
         # y2 = (y2 - SpecRows)#*-1
 
         return x1, x2, y1, y2
+
+    def get_label_start_pos(self, label):
+        start_pos = label.sceneBoundingRect().x()
+        width = label.sceneBoundingRect().width()
+        # If width is negative, remove it to get true starting pos
+        if width < 0:
+            start_pos += width
+        return start_pos
 
     def convertLabelRectsToRects(self):
         labels = []
@@ -1211,8 +1226,7 @@ class AudioTagger(QtWidgets.QMainWindow):
                     msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
                     ret = msgBox.exec_()
 
-                    penCol = QtGui.QColor()
-                    penCol.setRgb(0, 0, 200)
+                    penCol = self.LABEL_DEFAULT_COLOR
 
                     self.unconfiguredLabels += [c]
 
@@ -1295,29 +1309,6 @@ class AudioTagger(QtWidgets.QMainWindow):
     def getLabelTimeValue(self, labelRect):
         return labelRect.sceneBoundingRect().x()
 
-    def findNextLabelInTime(self, currentActiveLabel):
-        nearest = None
-        for i, labelRect in enumerate(self.labelRects):
-            if labelRect == self.labelRects[currentActiveLabel]:
-                continue
-
-            if labelRect is None:
-                continue
-
-            diff = self.getLabelTimeValue(labelRect) - \
-                self.getLabelTimeValue(self.labelRects[currentActiveLabel])
-
-            if diff > 0:
-                if nearest is None:
-                    nearest = (i, diff)
-                elif nearest[1] > diff:
-                    nearest = (i, diff)
-
-        if nearest is not None:
-            return nearest[0]
-        else:
-            return None
-
     def get_tag_index(self, offset):
         if not self.labelRects:
             return None
@@ -1353,25 +1344,14 @@ class AudioTagger(QtWidgets.QMainWindow):
             idx = len(self.labelRects) - 1
         self.select_tag(idx)
 
-    def toggleLabels(self):
-        # iF nothing is selected, highlight the [0] index label when toggle button pressed
-        if self.activeLabel is None:
-            activeLabel = 0
-        else:
-            activeLabel = self.findNextLabelInTime(self.activeLabel)
-            if activeLabel is None:
-                activeLabel = 0
-
-        self.select_tag(activeLabel)
-
-    def toggleToLast(self):
-        self.select_tag(len(self.labelRects) - 1)
-
     def select_tag(self, tag_idx, centerOnActiveLabel=True):
         if self.activeLabel is not None:
             old_tag = self.labelRects[self.activeLabel]
             if old_tag:
-                penCol = self.labels.get_color(old_tag.infoString)
+                if not old_tag.infoString in self.unconfiguredLabels:
+                    penCol = self.labels.get_color(old_tag.infoString)
+                else:
+                    penCol = self.LABEL_DEFAULT_COLOR
                 # self.rectClasses[old_tag])
                 pen = QtGui.QPen(penCol)
                 old_tag.setPen(pen)
@@ -1380,7 +1360,6 @@ class AudioTagger(QtWidgets.QMainWindow):
         if tag_idx is None:
             return
 
-        print("selecting: ", self.activeLabel, len(self.labelRects))
         new_tag = self.labelRects[self.activeLabel]
         penCol = QtGui.QColor()
         penCol.setRgb(255, 255, 255)
@@ -1535,7 +1514,11 @@ class MouseFilterObj(QtCore.QObject):  # And this one
     def eventFilter(self, obj, event):
         # print(event.type())
 
-        if event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
+        if event.type() == QtCore.QEvent.GraphicsSceneMouseDoubleClick:
+            if event.button() == QtCore.Qt.LeftButton:
+                self.parent.select_label(event.scenePos())
+
+        elif event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
             if event.button() == QtCore.Qt.LeftButton:
                 self.parent.releaseInScene(event.scenePos())
             elif event.button() == QtCore.Qt.MiddleButton:

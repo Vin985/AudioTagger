@@ -20,19 +20,19 @@ AMGP: &id001 !!python/object:AudioTagger.tags.Tag
         related: []
 AMGP_1(tu-tit): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '1'
+  keyseq: ''
   name: AMGP_1(tu-tit)
   related:
   - *id001
 AMGP_2(tuuut): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '2'
+  keyseq: ''
   name: AMGP_2(tuuut)
   related:
   - *id001
 AMGP_3(other): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '3'
+  keyseq: ''
   name: AMGP_3(other)
   related:
   - *id001
@@ -62,22 +62,22 @@ SESA: &id006 !!python/object:AudioTagger.tags.Tag
   name: SESA
   related:
   - *id004
-SESA_1: !!python/object:AudioTagger.tags.Tag
+SESA_1(chirp): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
-  name: SESA_1
+  keyseq: '1'
+  name: SESA_1(chirp)
   related:
   - *id006
-SESA_2: !!python/object:AudioTagger.tags.Tag
+SESA_2(motorboat): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
-  name: SESA_2
+  keyseq: '2'
+  name: SESA_2(motorboat)
   related:
   - *id006
-SESA_3: !!python/object:AudioTagger.tags.Tag
+SESA_3(titutu): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
-  name: SESA_3
+  keyseq: '3'
+  name: SESA_3(titutu)
   related:
   - *id006
 Shorebird: *id004
