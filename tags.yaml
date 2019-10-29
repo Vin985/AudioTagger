@@ -63,7 +63,7 @@ SESA: &id006 !!python/object:AudioTagger.tags.Tag
   related:
   - *id004
 SESA_1(chirp): !!python/object:AudioTagger.tags.Tag
-  color: 4294901887
+  color: 4294764879
   keyseq: '1'
   name: SESA_1(chirp)
   related:
