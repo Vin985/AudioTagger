@@ -3,9 +3,11 @@ import csv
 import datetime as dt
 import os
 import sys
+import traceback
 import warnings
 from collections import OrderedDict
 
+import librosa
 import numpy as np
 import qimage2ndarray as qim2np
 import scipy.io.wavfile
@@ -469,8 +471,12 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.local_config.set("files", "files_done", ",".join(self.files_done))
         if self.current_file:
             self.local_config.set("files", "current_file", self.current_file)
-        with open(local_conf, 'w') as conf_file:
-            self.local_config.write(conf_file)
+        try:
+            with open(local_conf, 'w') as conf_file:
+                self.local_config.write(conf_file)
+        except Exception as e:
+            # TODO add specific cases
+            print(traceback.format_exc())
 
     def exportSettings(self):
         savePath = QtWidgets.QFileDialog().getSaveFileName(self,
@@ -624,6 +630,7 @@ class AudioTagger(QtWidgets.QMainWindow):
             self.pause_sound()
             return
 
+        # TODO: Use sound player information instead!
         currentTime = dt.datetime.now()
         increment = (currentTime - self.lastMarkerUpdate).total_seconds()
         self.soundSec += increment * self.sound_speed
@@ -758,7 +765,7 @@ class AudioTagger(QtWidgets.QMainWindow):
         # self.setZoomBoundingBox()
 
     def updateSpecLabel(self):
-        self.spec, self.freqs = self.SpecGen(
+        self.spec = self.SpecGen(
             os.path.join(self.basefolder, self.current_file))
         self.updateLabelWithSpectrogram(self.spec)
         self.specHeight = self.spec.shape[1]
@@ -835,6 +842,27 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.changeSpectrogramResolution(0.001, 0.003)
 
     def SpecGen(self, filepath):
+        # TODO: hande multichannel!
+
+        # audio, sr = librosa.load(filepath, sr=None)
+        # spectro = librosa.stft(
+        #     audio, 1024,  window="hamming")
+        # #spectro = librosa.feature.melspectrogram(S=spectro)
+        # spec = np.log(np.abs(spectro))
+        # print(spec.shape)
+        # # if self.denoised:
+        # #     # TODO: check SNR to remove noise?
+        # #     spec = self.remove_noise(spec, self.nr_N,
+        # #                              self.nr_hist_rel_size, self.nr_window_smoothing)
+        # #     spec = spec.astype("float32")
+        # #
+        # # if self.normalize:
+        # #     spec = librosa.util.normalize(spec)
+        # #
+        # # if self.to_db:
+        # #     spec = librosa.amplitude_to_db(spec, ref=np.max)
+        # #
+        # # return spec
         """
         Code to generate spectrogram adapted from code posted on https://mail.python.org/pipermail/chicago/2010-December/007314.html by Ken Schutte (kenshutte@gmail.com)
         """
@@ -860,12 +888,10 @@ class AudioTagger(QtWidgets.QMainWindow):
         # compute fft
         fft_mat = np.fft.rfft(x_wins_ham, n=nfft, axis=0)[:int(nfft / 2), :]
 
-        freqs = np.fft.rfftfreq(nfft, 1.0 / sr)
-
         # log magnitude
         fft_mat_lm = np.log(np.abs(fft_mat))
-
-        return fft_mat_lm.T, freqs
+        # return spec.T
+        return fft_mat_lm.T
 
     def updateLabelWithSpectrogram(self, spec):
         # clrSpec = np.uint8(plt.cm.binary(spec / np.max(spec)) * 255)#To change color, alter plt.cm.jet to plt.cm.#alternative code#

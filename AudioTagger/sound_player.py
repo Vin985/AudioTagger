@@ -14,6 +14,7 @@ class SoundPlayer():
         self.sr = 0
         self.playing = False
         self.speed = 1
+        self.done = False
 
     def __del__(self):
         self.terminate()
@@ -38,11 +39,21 @@ class SoundPlayer():
 
     def play(self):
         print("playing")
+        if self.done:
+            # File has already finished, restart stream
+            print("resetting")
+            self.reset_stream()
+            self.done = False
         self.playing = True
         self.stream.start_stream()
 
     def read_frames(self, input_data, frame_count, time_info, status):
+        expected_size = self.wave_file.getsampwidth() * frame_count * \
+            self.nchannels
         data = self.wave_file.readframes(frame_count)
+        if len(data) < expected_size:
+            self.done = True
+            self.playing = False
         return (data, pyaudio.paContinue)
 
     def pause(self):
@@ -73,7 +84,10 @@ class SoundPlayer():
         pos_frame = int(pos * self.sr)
         self.wave_file.setpos(pos_frame)
 
-    def change_speed(self, speed):
-        self.speed = speed
+    def reset_stream(self):
         self.stream.close()
         self.open_stream()
+
+    def change_speed(self, speed):
+        self.speed = speed
+        self.reset_stream()
