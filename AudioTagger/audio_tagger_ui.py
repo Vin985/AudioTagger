@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui_mod.ui',
-# licensing of 'gui_mod.ui' applies.
+# Form implementation generated from reading ui file 'audio_tagger.ui',
+# licensing of 'audio_tagger.ui' applies.
 #
-# Created: Tue Oct 15 16:32:38 2019
+# Created: Mon Nov  4 08:50:21 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.splitter = QtWidgets.QSplitter(self.frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(5)
+        sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
@@ -74,7 +74,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.addWidget(self.pb_next)
         self.verticalLayout_5.addLayout(self.horizontalLayout_5)
         self.file_tree = QtWidgets.QTreeWidget(self.file_frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.file_tree.sizePolicy().hasHeightForWidth())
@@ -87,7 +87,7 @@ class Ui_MainWindow(object):
         self.file_tree.header().setVisible(True)
         self.verticalLayout_5.addWidget(self.file_tree)
         self.spectro_frame = QtWidgets.QFrame(self.splitter)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.spectro_frame.sizePolicy().hasHeightForWidth())
