@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'audio_tagger.ui',
 # licensing of 'audio_tagger.ui' applies.
 #
-# Created: Mon Nov  4 09:08:26 2019
+# Created: Fri Nov 22 16:04:28 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -286,6 +286,19 @@ class Ui_MainWindow(object):
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem5)
         self.verticalLayout_3.addLayout(self.horizontalLayout)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_8 = QtWidgets.QLabel(self.groupBox)
+        self.label_8.setObjectName("label_8")
+        self.horizontalLayout_6.addWidget(self.label_8)
+        self.slider_contrast = QtWidgets.QSlider(self.groupBox)
+        self.slider_contrast.setMinimum(10)
+        self.slider_contrast.setMaximum(26)
+        self.slider_contrast.setSliderPosition(18)
+        self.slider_contrast.setOrientation(QtCore.Qt.Horizontal)
+        self.slider_contrast.setObjectName("slider_contrast")
+        self.horizontalLayout_6.addWidget(self.slider_contrast)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
         spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem6)
         self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
@@ -475,6 +488,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "spectrogram type:", None, -1))
         self.cb_specType.setItemText(0, QtWidgets.QApplication.translate("MainWindow", "audible range", None, -1))
         self.cb_specType.setItemText(1, QtWidgets.QApplication.translate("MainWindow", "ultra sonic range", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("MainWindow", "Color contrast", None, -1))
         self.groupBox_2.setTitle(QtWidgets.QApplication.translate("MainWindow", "Annotations", None, -1))
         self.lbl_spec_create.setText(QtWidgets.QApplication.translate("MainWindow", "Create", None, -1))
         self.lbl_spec_modify.setText(QtWidgets.QApplication.translate("MainWindow", "Modify", None, -1))

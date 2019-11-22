@@ -172,6 +172,8 @@ class AudioTagger(QtWidgets.QMainWindow):
         self.ui.cb_specType.activated.connect(self.selectSpectrogramMode)
         self.ui.cb_labelType.currentIndexChanged.connect(self.changeTag)
         self.ui.btn_done.clicked.connect(self.set_file_done)
+        self.ui.slider_contrast.valueChanged.connect(
+            self.updateLabelWithSpectrogram)
 
         # Tree interaction
         self.ui.file_tree.currentItemChanged.connect(self.change_file)
@@ -767,7 +769,7 @@ class AudioTagger(QtWidgets.QMainWindow):
     def updateSpecLabel(self):
         self.spec = self.SpecGen(
             os.path.join(self.basefolder, self.current_file))
-        self.updateLabelWithSpectrogram(self.spec)
+        self.updateLabelWithSpectrogram()
         self.specHeight = self.spec.shape[1]
         self.specWidth = self.spec.shape[0]
         self.configureElements()
@@ -897,11 +899,11 @@ class AudioTagger(QtWidgets.QMainWindow):
 
         return fft_mat_lm.T
 
-    def updateLabelWithSpectrogram(self, spec):
+    def updateLabelWithSpectrogram(self):
         # clrSpec = np.uint8(plt.cm.binary(spec / np.max(spec)) * 255)#To change color, alter plt.cm.jet to plt.cm.#alternative code#
         # To change color, alter plt.cm.jet to plt.cm.#alternative code#
-        spec /= 18
-        clrSpec = np.uint8(self.cm(spec) * 255)
+        clrSpec = self.spec / self.ui.slider_contrast.value()
+        clrSpec = np.uint8(self.cm(clrSpec) * 255)
         clrSpec = np.rot90(clrSpec, 1)
         # clrSpec = spmisc.imresize(clrSpec, 0.25)
         # converting from numpy array to qt image
