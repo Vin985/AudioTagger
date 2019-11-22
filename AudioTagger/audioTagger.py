@@ -1219,7 +1219,8 @@ class AudioTagger(QtWidgets.QMainWindow):
                 np.mean(boundingBox),                           # MeanAmp
                 np.std(boundingBox),                            # AmpSD
                 # LabelArea_DataPoints
-                (x2 - x1) * (y2 - y1)
+                (x2 - x1) * (y2 - y1),
+                ",".join(self.labels[labelRect.infoString].get_related())
             ]
 
             labels += [label]
@@ -1290,14 +1291,15 @@ class AudioTagger(QtWidgets.QMainWindow):
             wr = csv.writer(f, dialect='excel')
             wr.writerow(["Filename", "Label", "LabelTimeStamp", "Spec_NStep", "Spec_NWin", "Spec_x1", "Spec_y1", "Spec_x2", "Spec_y2",
                          "LabelStartTime_Seconds", "LabelEndTime_Seconds", "MinimumFreq_Hz", "MaximumFreq_Hz",
-                         "MaxAmp", "MinAmp", "MeanAmp", "AmpSD", "LabelArea_DataPoints"])
+                         "MaxAmp", "MinAmp", "MeanAmp", "AmpSD", "LabelArea_DataPoints", "Related"])
             for label in labels:
 
                 wr.writerow(label)
 
         self.contentChanged = False
-        self.ui.file_tree.currentItem().setBackground(0,
-                                                      QtGui.QBrush(QtGui.QColor(self.BG_COLOR_WIP)))
+        if not self.current_file in self.files_done:
+            self.ui.file_tree.currentItem().setBackground(0,
+                                                          QtGui.QBrush(QtGui.QColor(self.BG_COLOR_WIP)))
 
     def print_start_time(self):
         res = [self.getLabelTimeValue(label) for label in self.labelRects]
