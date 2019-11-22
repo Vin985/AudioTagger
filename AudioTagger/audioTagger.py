@@ -862,12 +862,15 @@ class AudioTagger(QtWidgets.QMainWindow):
         # # if self.to_db:
         # #     spec = librosa.amplitude_to_db(spec, ref=np.max)
         # #
-        # # return spec
+        # return spec.T
         """
         Code to generate spectrogram adapted from code posted on https://mail.python.org/pipermail/chicago/2010-December/007314.html by Ken Schutte (kenshutte@gmail.com)
         """
-
         sr, x = scipy.io.wavfile.read(filepath)
+        # Convert stereo to mono
+        if len(x.shape) > 1:
+            x = x.sum(axis=1) / 2
+
         self.soundDurationSec = x.shape[0] / float(sr)
 
         # Parameters
@@ -891,12 +894,14 @@ class AudioTagger(QtWidgets.QMainWindow):
         # log magnitude
         fft_mat_lm = np.log(np.abs(fft_mat))
         # return spec.T
+
         return fft_mat_lm.T
 
     def updateLabelWithSpectrogram(self, spec):
         # clrSpec = np.uint8(plt.cm.binary(spec / np.max(spec)) * 255)#To change color, alter plt.cm.jet to plt.cm.#alternative code#
         # To change color, alter plt.cm.jet to plt.cm.#alternative code#
-        clrSpec = np.uint8(self.cm(spec / 18.0) * 255)
+        spec /= 18
+        clrSpec = np.uint8(self.cm(spec) * 255)
         clrSpec = np.rot90(clrSpec, 1)
         # clrSpec = spmisc.imresize(clrSpec, 0.25)
         # converting from numpy array to qt image
