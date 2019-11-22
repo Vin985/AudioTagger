@@ -74,7 +74,7 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.input_keyseq.setKeySequence(tag.keyseq)
 
         # Related tags
-        self.lbl_related_tags.setText(str(tag.get_related()))
+        self.lbl_related_tags.setText(", ".join(tag.get_related()))
 
     def select_color(self):
         color = QtWidgets.QColorDialog.getColor()
