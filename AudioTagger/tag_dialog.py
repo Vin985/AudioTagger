@@ -2,8 +2,8 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from AudioTagger.gui.tag_dialog_ui import Ui_TagDialog
 from AudioTagger.manage_related_dialog import ManageRelatedDialog
-from AudioTagger.tag_dialog_ui import Ui_TagDialog
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
