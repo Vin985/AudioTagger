@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'sound_controller.ui',
 # licensing of 'sound_controller.ui' applies.
 #
-# Created: Thu Dec 19 13:01:02 2019
+# Created: Thu Dec 19 13:55:24 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
