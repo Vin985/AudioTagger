@@ -1,5 +1,4 @@
 import configparser
-import csv
 import datetime as dt
 import os
 import sys
@@ -7,7 +6,6 @@ import traceback
 import warnings
 from collections import OrderedDict
 
-import librosa
 import numpy as np
 import qimage2ndarray as qim2np
 import scipy.io.wavfile
@@ -15,8 +13,10 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 import AudioTagger.colourMap as CM
 import AudioTagger.db_utils as db_utils
-import AudioTagger.modifyableRect as MR
+import AudioTagger.event_filters as filters
+from AudioTagger.contextlineedit import ContextLineEdit
 from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
+from AudioTagger.labelrectitem import LabelRectItem
 from AudioTagger.sound_player import SoundPlayer
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
@@ -24,26 +24,6 @@ from AudioTagger.tags import Tags
 # from PySide import QtCore, QtGui
 
 WAV_EXTENSIONS = [".wav", ".WAV"]
-
-COLUMNS = {"file": "Filename",
-           "label": "Label",
-           "timestamp": "LabelTimeStamp",
-           "nstep": "Spec_NStep",
-           "nwin": "Spec_NWin",
-           "x1": "Spec_x1",
-           "y1": "Spec_y1",
-           "x2": "Spec_x2",
-           "y2": "Spec_y2",
-           "start": "LabelStartTime_Seconds",
-           "end": "LabelEndTime_Seconds",
-           "min_freq": "MinimumFreq_Hz",
-           "max_freq": "MaximumFreq_Hz",
-           "max_amp": "MaxAmp",
-           "min_amp": "MinAmp",
-           "mean_amp": "MeanAmp",
-           "amp_sd": "AmpSD",
-           "area_datapoints": "LabelArea_DataPoints",
-           "related": "Related"}
 
 
 class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -80,6 +60,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         # local config file
         self.local_config = None
         self.current_file = None
+        self.next_label_id = 0
         self.filelist = []
         self.label_filelist = []
         self.hide_done = False
@@ -99,12 +80,13 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.mouse_scene_y = None
         self.mouse_scene_x = None
 
+        self.spec_opts = {"nstep": 0.01, "nwin": 0.03,
+                          "height": 360, "width": 20000}
         # Spectrogram settings
-        self.audibleRange = True
-        self.specNStepMod = 0.01    # horizontal resolution of spectogram 0.01
-        self.specNWinMod = 0.03     # vertical resolution of spectogram 0.03
-        self.specHeight = 360
-        self.specWidth = 20000
+        # self.specNStepMod = 0.01    # horizontal resolution of spectogram 0.01
+        # self.specNWinMod = 0.03     # vertical resolution of spectogram 0.03
+        # self.spec_opts["height"] = 360
+        # self.spec_opts["width"] = 20000
 
         # Initialize gui variable
         self.mouseInOverview = False
@@ -118,7 +100,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.bgImg = None
         self.tracker = None
-        self.viewHeight = 0
         self.viewX = 0
         self.viewY = 0
         self.viewWidth = 0
@@ -154,6 +135,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.configureElements()
         self.link_events()
+
         self.show()
 
         self.open_folder(self.base_folder, self.label_folder)
@@ -167,11 +149,11 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tracker.deactivate()
 
     def setFilters(self):
-        self.mouseEventFilter = MouseFilterObj(self)
-        self.KeyboardFilter = KeyboardFilterObj(self)
-        self.mouseInsideFilter = MouseInsideFilterObj(
+        self.mouse_inside_filter = filters.MouseInsideFilter(
             self.enterGV, self.leaveGV)
-        self.installEventFilter(self.KeyboardFilter)
+        self.mouse_filter = filters.MouseFilter(self)
+        self.keyboard_filter = filters.KeyboardFilter(self)
+        self.installEventFilter(self.keyboard_filter)
 
     def link_events(self):
         # GUI elements
@@ -213,8 +195,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.scrollView.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
 
-        w = self.specWidth
-        h = self.specHeight
+        w = self.spec_opts["width"]
+        h = self.spec_opts["height"]
         self.sceneRect = QtCore.QRectF(0, 0, w, h)
         self.overviewScene.setSceneRect(self.sceneRect)
 
@@ -288,18 +270,16 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.gw_overview.setFrameStyle(QtWidgets.QFrame.NoFrame)
         self.overviewScene = QtWidgets.QGraphicsScene(self)
 
-        # self.overviewScene.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
-
         self.gw_overview.setScene(self.overviewScene)
         self.gw_overview.setMouseTracking(True)
         self.gw_overview.setFixedHeight(100)
 
-        self.gw_overview.installEventFilter(self.mouseInsideFilter)
+        self.gw_overview.installEventFilter(self.mouse_inside_filter)
 
         self.scrollView.setScene(self.overviewScene)
         self.scrollView.setMouseTracking(True)
 
-        self.overviewScene.installEventFilter(self.mouseEventFilter)
+        self.overviewScene.installEventFilter(self.mouse_filter)
 
     def zoom(self, scale, scenePos=None):
         self.yscale *= scale
@@ -353,7 +333,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def setupLabelMenu(self):
         wa = QtWidgets.QWidgetAction(self)
-        self.cle = MR.ContextLineEdit(wa, self)
+        self.cle = ContextLineEdit(wa, self)
         self.cle.setModel(self.labels.get_names())
 
         wa.setDefaultWidget(self.cle)
@@ -426,7 +406,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         settings.setValue("label_folder", self.label_folder)
 
     def loadSettingsLocal(self):
-        settings = QtCore.QSettings()
+        # settings = QtCore.QSettings()
         self.labels.load("tags.yaml")
         self.update_labels_Ui()
 
@@ -525,8 +505,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.contentChanged = cc
 
         # Remove all entries in annotation combobox
-        for i in range(self.cb_labelType.count()):
-            self.cb_labelType.removeItem(0)
+        self.cb_labelType.clear()
 
         # Update combobox with new labels
         label_names = self.labels.get_names()
@@ -536,7 +515,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         # update keyboard shortcuts
         self.updateShortcuts()
 
-    def updateSettings(self, labels):
+    def updateSettings(self):
         self.update_labels_Ui()
         self.saveSettingsLocal()
 
@@ -546,7 +525,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 labelRect.setInfoString(new)
                 print("replacing: " + old + "by: " + new)
 
-    def change_file(self, item, column):
+    def change_file(self, item):
         file = item.text(0)
         if file != self.current_file:
             self.load_file(file)
@@ -576,8 +555,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     ################### SOUND STUFF #######################
     def updateSoundMarker(self):
         # 100 # multiply by step-size in SpecGen()
-        markerPos = self.soundSec * (1.0 / self.specNStepMod)
-        line = QtCore.QLineF(markerPos, 0, markerPos, self.specHeight)
+        markerPos = self.soundSec * (1.0 / self.spec_opts["nstep"])
+        line = QtCore.QLineF(markerPos, 0, markerPos, self.spec_opts["height"])
         if not self.soundMarker:
             penCol = QtGui.QColor()
             penCol.setRgb(255, 0, 0)
@@ -650,7 +629,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.soundTimer.stop()
 
     def seekSound(self, graphicsPos):
-        sec = graphicsPos * self.specNStepMod
+        sec = graphicsPos * self.spec_opts["nstep"]
         # self.s4p.seek(sec)
         self.sound_player.seek(sec)
         self.soundSec = sec
@@ -665,9 +644,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     def resetView(self):
         self.clearSceneRects()
 
-        if self.specNStepMod == 0.01 and self.specNWinMod == 0.03:
+        if self.spec_opts["nstep"] == 0.01 and self.spec_opts["nwin"] == 0.03:
             self.sound_controller.cb_specType.setCurrentIndex(0)
-        elif self.specNStepMod == 0.001 and self.specNWinMod == 0.003:
+        elif self.spec_opts["nstep"] == 0.001 and self.spec_opts["nwin"] == 0.003:
             self.sound_controller.cb_specType.setCurrentIndex(1)
         else:
             warnings.warn(
@@ -726,27 +705,18 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     def updateSpecLabel(self, file_path):
         self.spec = self.SpecGen(file_path)
         self.updateLabelWithSpectrogram()
-        self.specHeight = self.spec.shape[1]
-        self.specWidth = self.spec.shape[0]
+        self.spec_opts["height"] = self.spec.shape[1]
+        self.spec_opts["width"] = self.spec.shape[0]
         self.configureElements()
         self.update_info_viewer()
 
-    def get_file_list(self, folder, extensions=[]):
+    def get_file_list(self, folder, extensions=WAV_EXTENSIONS):
         fileList = []
-        for root, dirs, files in os.walk(folder):
+        for root, _, files in os.walk(folder):
             for f in sorted(files):
                 ext = f[-4:]
                 if ext in extensions:
                     fileList.append(os.path.join(root, f))
-        return fileList
-
-    def getListOfWavefiles(self, folder):
-        fileList = []
-        for root, dirs, files in os.walk(folder):
-            for f in sorted(files):
-                if f.endswith('.wav') or f.endswith('.WAV'):
-                    fileList += [os.path.join(root, f)]
-
         return fileList
 
     def open_folder(self, wavFolder=None, label_folder=None):
@@ -784,8 +754,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     ####################### SPECTROGRAM #############################
 
     def changeSpectrogramResolution(self, nstepMod, nWinMod):
-        self.specNStepMod = nstepMod    # horizontal resolution of spectogram
-        self.specNWinMod = nWinMod     # vertical resolution of spectogram
+        # horizontal resolution of spectogram
+        self.spec_opts["nstep"] = nstepMod
+        # vertical resolution of spectogram
+        self.spec_opts["nwin"] = nWinMod
 
     def changeSpectrogramModeToAudible(self):
         self.changeSpectrogramResolution(0.01, 0.03)
@@ -826,8 +798,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.soundDurationSec = x.shape[0] / float(sr)
 
         # Parameters
-        nstep = int(sr * self.specNStepMod)
-        nwin = int(sr * self.specNWinMod)
+        nstep = int(sr * self.spec_opts["nstep"])
+        nwin = int(sr * self.spec_opts["nwin"])
         nfft = nwin
 
         # Get all windows of x with length n as a single array, using strides to avoid data duplication
@@ -904,8 +876,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.viewY = self.scrollView.verticalScrollBar().value() * (1.0 / self.yscale)
 
         self.viewHeight = self.scrollView.height()
-        if self.viewHeight > self.specHeight * self.yscale:
-            self.viewHeight = self.specHeight * self.yscale
+        if self.viewHeight > self.spec_opts["height"] * self.yscale:
+            self.viewHeight = self.spec_opts["height"] * self.yscale
 
         self.viewHeight *= (1.0 / self.yscale)
         if updateCenter:
@@ -987,10 +959,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         penCol = self.labels.get_color(self.cb_labelType.currentText())
 
-        self.labelRect = MR.LabelRectItem(self.menu,
-                                          self.registerLastLabelRectContext,
-                                          self.cb_labelType.currentText(),
-                                          rectChangedCallback=self.labelRectChangedSlot)
+        self.labelRect = LabelRectItem(menu=self.menu,
+                                       contextRegisterCallback=self.registerLastLabelRectContext,
+                                       infoString=self.cb_labelType.currentText(),
+                                       rectChangedCallback=self.labelRectChangedSlot)
         self.labelRect.deactivate()
         self.labelRect.setRect(x, y, 20, 20)
         self.labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
@@ -1098,8 +1070,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             x1 = 0
         if y1 < 0:
             y1 = 0
-        if y2 > self.specHeight:
-            y2 = self.specHeight
+        if y2 > self.spec_opts["height"]:
+            y2 = self.spec_opts["height"]
         # Transform y coordinates
         # y1 = (y1 - SpecRows)#*-1
         # y2 = (y2 - SpecRows)#*-1
@@ -1129,31 +1101,31 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             # maxium signal frequency
             maxSigFreq = sr / 2.0
             # step in freqency for every pixel in y-direction
-            freqStep = self.specHeight / maxSigFreq
+            freqStep = self.spec_opts["height"] / maxSigFreq
 
             x1, x2, y1, y2 = self.getBoxCoordinates(r)
             boundingBox = self.spec[int(x1):int(x2), int(y1):int(y2)]
 
             label = {
-                COLUMNS["file"]: self.current_file,
-                COLUMNS["label"]: labelRect.infoString,
-                COLUMNS["timestamp"]: dt.datetime.now().isoformat(),
-                COLUMNS["nstep"]: self.specNStepMod,
-                COLUMNS["nwin"]: self.specNWinMod,
-                COLUMNS["x1"]: x1,
-                COLUMNS["y1"]: y1,
-                COLUMNS["x2"]: x2,
-                COLUMNS["y2"]: y2,
-                COLUMNS["start"]: x1 * self.specNStepMod,
-                COLUMNS["end"]: x2 * self.specNStepMod,
-                COLUMNS["min_freq"]: maxSigFreq - (y2 / freqStep),
-                COLUMNS["max_freq"]: maxSigFreq - (y1 / freqStep),
-                COLUMNS["max_amp"]: np.max(boundingBox),
-                COLUMNS["min_amp"]: np.min(boundingBox),
-                COLUMNS["mean_amp"]: np.mean(boundingBox),
-                COLUMNS["amp_sd"]: np.std(boundingBox),
-                COLUMNS["area_datapoints"]: (x2 - x1) * (y2 - y1),
-                COLUMNS["related"]: ",".join(
+                "file": self.current_file,
+                "label": labelRect.infoString,
+                "timestamp": dt.datetime.now().isoformat(),
+                "nstep": self.spec_opts["nstep"],
+                "nwin": self.spec_opts["nwin"],
+                "x1": x1,
+                "y1": y1,
+                "x2": x2,
+                "y2": y2,
+                "start": x1 * self.spec_opts["nstep"],
+                "end": x2 * self.spec_opts["nstep"],
+                "min_freq": maxSigFreq - (y2 / freqStep),
+                "max_freq": maxSigFreq - (y1 / freqStep),
+                "max_amp": np.max(boundingBox),
+                "min_amp": np.min(boundingBox),
+                "mean_amp": np.mean(boundingBox),
+                "amp_sd": np.std(boundingBox),
+                "area_datapoints": (x2 - x1) * (y2 - y1),
+                "related": ",".join(
                     self.labels[labelRect.infoString].get_related())
             }
 
@@ -1161,24 +1133,41 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return labels
 
-    def labels_to_labelRects(self, labels):
+    def labels_to_labelRects(self, label_infos):
         self.clearSceneRects()
 
-        for label in labels:
+        for label_info in label_infos:
 
-            self.specNStepMod = float(label[COLUMNS["nstep"]])
-            self.specNWinMod = float(label[COLUMNS["nwin"]])
-            start = float(label[COLUMNS["start"]])
-            end = float(label[COLUMNS["end"]])
-            min_freq = float(label[COLUMNS["min_freq"]])
-            max_freq = float(label[COLUMNS["max_freq"]])
-            label_name = label[COLUMNS["label"]]
+            if "id" in label_info:
+                id = int(label_info["id"])
+            else:
+                id = self.next_label_id
+                self.next_label_id += 1
+
+            # Case where label doesnt exist
+            label_class = self.labels[label_info["label"]]
+
+            # TODO: finish here! Extract info from label_class
+            labelRect = LabelRectItem(
+                label_id=id, label_class=label_class, sr=self.sound_player.sr,
+                spec_opts=self.spec_opts, label_info=label_info, menu=self.menu,
+                context_register_callback=self.registerLastLabelRectContext,
+                infoString="label_name",
+                rectChangedCallback=self.labelRectChangedSlot)
+
+            self.spec_opts["nstep"] = float(label_info["nstep"])
+            self.spec_opts["nwin"] = float(label_info["nwin"])
+            start = float(label_info["start"])
+            end = float(label_info["end"])
+            min_freq = float(label_info["min_freq"])
+            max_freq = float(label_info["max_freq"])
+            label_name = label_info["label"]
 
             maxSigFreq = self.sound_player.sr / 2.0
-            freqStep = self.specHeight / maxSigFreq
+            freqStep = self.spec_opts["height"] / maxSigFreq
 
-            x1 = start / self.specNStepMod
-            x2 = end / self.specNStepMod
+            x1 = start / self.spec_opts["nstep"]
+            x2 = end / self.spec_opts["nstep"]
 
             y1 = (maxSigFreq - max_freq) * freqStep
             y2 = (maxSigFreq - min_freq) * freqStep
@@ -1203,10 +1192,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     self.unconfiguredLabels += [label_name]
 
-            labelRect = MR.LabelRectItem(self.menu,
-                                         self.registerLastLabelRectContext,
-                                         infoString=label_name,
-                                         rectChangedCallback=self.labelRectChangedSlot)
+            labelRect = LabelRectItem(menu=self.menu,
+                                      context_register_callback=self.registerLastLabelRectContext,
+                                      infoString=label_name,
+                                      rectChangedCallback=self.labelRectChangedSlot)
             labelRect.setRect(rect)
             labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
             labelRect.setupInfoTextItem(fontSize=12, color=penCol)
@@ -1215,10 +1204,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.labelRects.sort(key=self.getLabelTimeValue)
 
-    def save_labels(self, checked=False, to_append="-sceneRect"):
+    def save_labels(self, checked=False):
         labels = self.labelRects_to_labels()
-        db_utils.save_csv(self.current_file, self.label_folder,
-                          labels, list(COLUMNS.values()))
+        db_utils.save_csv(self.current_file, self.label_folder, labels)
 
         self.contentChanged = False
         if not self.current_file in self.files_done:
@@ -1229,9 +1217,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         res = [self.getLabelTimeValue(label) for label in self.labelRects]
         print(res)
 
-    def load_labels(self, to_append="-sceneRect"):
+    def load_labels(self):
         labels = db_utils.load_csv(
             self.current_file, self.label_folder)
+
         self.labels_to_labelRects(labels)
 
         self.contentChanged = False
@@ -1408,93 +1397,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.info_viewer.setText(s)
 
 
-# Ask Peter why these are seperate classes?
-class ScrollAreaEventFilter(QtCore.QObject):
-    def __init__(self, callback):
-        QtCore.QObject.__init__(self)
-        self.callback = callback
-
-    def eventFilter(self, obj, event):
-        if isinstance(event, QtCore.QDynamicPropertyChangeEvent) \
-                or event.type() == QtCore.QEvent.MouseMove:
-            self.callback()
-
-
-class MouseFilterObj(QtCore.QObject):  # And this one
-    def __init__(self, parent):
-        QtCore.QObject.__init__(self)
-        self.parent = parent
-
-    def eventFilter(self, obj, event):
-
-        if event.type() == QtCore.QEvent.GraphicsSceneMouseDoubleClick:
-            if event.button() == QtCore.Qt.LeftButton:
-                self.parent.select_label(event.scenePos())
-
-        elif event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
-            if event.button() == QtCore.Qt.LeftButton:
-                self.parent.releaseInScene(event.scenePos())
-            elif event.button() == QtCore.Qt.MiddleButton:
-                self.parent.seekSound(event.scenePos().x())
-
-            self.parent.update_info_viewer()
-
-        elif event.type() == QtCore.QEvent.GraphicsSceneMousePress:
-            if event.button() == QtCore.Qt.LeftButton:
-                self.parent.clickInScene(event.scenePos())
-
-        elif event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
-            self.parent.show_position(event.scenePos())
-            if self.parent.isRectangleOpen:
-                self.parent.resizeSceneRectangle(int(event.scenePos().x()),
-                                                 int(event.scenePos().y()))
-
-        elif event.type() == QtCore.QEvent.GraphicsSceneWheel:
-            if event.modifiers() & QtCore.Qt.CTRL:
-                if event.delta() > 0:
-                    self.parent.zoom(1.1, event.scenePos())
-                else:
-                    self.parent.zoom(0.9, event.scenePos())
-                event.setAccepted(True)
-                return True
-
-        return False
-
-
-class KeyboardFilterObj(QtCore.QObject):
-    def __init__(self, parent):
-        QtCore.QObject.__init__(self)
-        self.parent = parent
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.KeyPress:
-            if event.key() == QtCore.Qt.Key_Tab:
-                self.parent.toggleLabels()
-            elif event.key() == QtCore.Qt.Key_Left:
-                if event.modifiers() & QtCore.Qt.ControlModifier:
-                    self.parent.load_previous()
-                else:
-                    self.parent.select_previous_tag()
-            elif event.key() == QtCore.Qt.Key_Right:
-                if event.modifiers() & QtCore.Qt.ControlModifier:
-                    self.parent.load_next()
-                else:
-                    self.parent.select_next_tag()
-            elif event.key() == QtCore.Qt.Key_Shift:
-                if self.parent.createOn:
-                    self.parent.toggleCreateMode()
-
-            else:
-                print(event.key())
-        elif event.type() == QtCore.QEvent.KeyRelease:
-            if event.key() == QtCore.Qt.Key_Shift:
-                if not self.parent.createOn:
-                    self.parent.toggleCreateMode()
-        return False
-
 # special GraphicsRectItem that is aware of its position and does something if the position is changed
-
-
 class MovableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
     """ from http://stackoverflow.com/a/24757931/2156909
     """
@@ -1552,31 +1455,14 @@ def main(ignoreSettings=False):
 
     app = QtWidgets.QApplication(sys.argv)
 
-    app.setOrganizationName("UCL")
-    app.setOrganizationDomain("https://github.com/groakat/AudioTagger")
+    app.setOrganizationName("ecosongs")
+    app.setOrganizationDomain("https://github.com/vin985/AudioTagger")
     app.setApplicationName("audioTagger")
 
     w = AudioTagger(base_folder=None, label_folder=None, labelTypes=None,
                     ignoreSettings=False)
 
     sys.exit(app.exec_())
-
-
-class MouseInsideFilterObj(QtCore.QObject):
-    def __init__(self, enterCallback, leaveCallback):
-        QtCore.QObject.__init__(self)
-
-        self.enterCallback = enterCallback
-        self.leaveCallback = leaveCallback
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.Enter:
-            self.enterCallback(obj)
-
-        if event.type() == QtCore.QEvent.Leave:
-            self.leaveCallback(obj)
-
-        return False
 
 
 if __name__ == "__main__":

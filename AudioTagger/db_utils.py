@@ -2,9 +2,33 @@
 import csv
 import os.path
 
-TO_APPEND = "-sceneRect"
+from bidict import bidict
+
+TO_APPEND = "-sceneRect2"
 
 WAV_EXTENSIONS = [".wav", ".WAV"]
+
+COLUMNS = bidict({"id": "id",
+                  "file": "Filename",
+                  "label": "Label",
+                  "timestamp": "LabelTimeStamp",
+                  "nstep": "Spec_NStep",
+                  "nwin": "Spec_NWin",
+                  # "x1": "Spec_x1",
+                  # "y1": "Spec_y1",
+                  # "x2": "Spec_x2",
+                  # "y2": "Spec_y2",
+                  "start": "LabelStartTime_Seconds",
+                  "end": "LabelEndTime_Seconds",
+                  "min_freq": "MinimumFreq_Hz",
+                  "max_freq": "MaximumFreq_Hz",
+                  "max_amp": "MaxAmp",
+                  "min_amp": "MinAmp",
+                  "mean_amp": "MeanAmp",
+                  "amp_sd": "AmpSD",
+                  "area_datapoints": "LabelArea_DataPoints",
+                  "overlap": "overlap",
+                  "related": "Related"})
 
 
 def create_label_filename(file, folder, to_append=TO_APPEND, ext='.csv'):
@@ -20,7 +44,7 @@ def create_label_filename(file, folder, to_append=TO_APPEND, ext='.csv'):
     return filename
 
 
-def save_csv(file, folder, labels, columns, to_append=TO_APPEND):
+def save_csv(file, folder, labels, columns=COLUMNS, to_append=TO_APPEND):
     filename = create_label_filename(
         file, folder, to_append=to_append, ext='.csv')
 
@@ -31,10 +55,12 @@ def save_csv(file, folder, labels, columns, to_append=TO_APPEND):
         writer = csv.DictWriter(f=f, fieldnames=columns, dialect='excel')
         writer.writeheader()
         for label in labels:
-            writer.writerow(label)
+            lbl = {columns[key]: value for key,
+                   value in label.items() if key in columns}
+            writer.writerow(lbl)
 
 
-def load_csv(file, folder, to_append=TO_APPEND):
+def load_csv(file, folder, columns=COLUMNS, to_append=TO_APPEND):
     filename = create_label_filename(
         file, folder, to_append=to_append, ext='.csv')
 
@@ -43,6 +69,7 @@ def load_csv(file, folder, to_append=TO_APPEND):
         with open(filename, "r") as f:
             reader = csv.DictReader(f, dialect='excel')
             for line in reader:
-                res.append(line)
+                lbl = {columns.inverse[key]: value for key, value in line.items()}
+                res.append(lbl)
 
     return res
