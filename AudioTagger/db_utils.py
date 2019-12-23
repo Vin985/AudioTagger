@@ -52,7 +52,8 @@ def save_csv(file, folder, labels, columns=COLUMNS, to_append=TO_APPEND):
         os.makedirs(folder)
 
     with open(filename, "w") as f:
-        writer = csv.DictWriter(f=f, fieldnames=columns, dialect='excel')
+        dest_columns = list(COLUMNS.values())
+        writer = csv.DictWriter(f=f, fieldnames=dest_columns, dialect='excel')
         writer.writeheader()
         for label in labels:
             lbl = {columns[key]: value for key,
@@ -69,7 +70,8 @@ def load_csv(file, folder, columns=COLUMNS, to_append=TO_APPEND):
         with open(filename, "r") as f:
             reader = csv.DictReader(f, dialect='excel')
             for line in reader:
-                lbl = {columns.inverse[key]: value for key, value in line.items()}
+                lbl = {columns.inverse[key]: value for key,
+                       value in line.items() if key in columns.values()}
                 res.append(lbl)
 
     return res

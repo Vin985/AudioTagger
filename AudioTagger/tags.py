@@ -2,10 +2,15 @@ import yaml
 
 
 class Tags:
+
+    DEFAULT_COLOR = "#0000c8"
+
     def __init__(self):
         self.tags = {}
 
-    def add(self, name, color=None, keyseq=None, related=[]):
+    def add(self, name, color=None, keyseq=None, related=None):
+        color = color if color else self.DEFAULT_COLOR
+        related = related if related else []
         tag = Tag(name, color, keyseq, related)
         self.tags[name] = tag
         return tag
@@ -20,7 +25,6 @@ class Tags:
         del self.tags[old]
 
     def __getitem__(self, key):
-        # print("getting item with key " + str(key))
         return self.tags[key]
 
     def __str__(self):
@@ -28,6 +32,9 @@ class Tags:
         for value in self.tags.values():
             res += str(value) + "\n"
         return res
+
+    def __contains__(self, tag):
+        return tag in self.tags
 
     def save(self, path):
         stream = open(path, 'w')
@@ -76,6 +83,9 @@ class Tags:
         self.tags = res
         # self.next_id = max(self.tags.keys()) + 1
 
+    def default_tag(self, name):
+        return Tag(name, self.DEFAULT_COLOR, "")
+
 
 class Tag:
     def __init__(self, name, color, keyseq, related=None):
@@ -120,10 +130,6 @@ class Tag:
         if level == 0 and as_list:
             return list(res)
         return res
-
-    def get_related_ids(self):
-        res = []
-        res.append(self.name)
 
     def __str__(self):
         return("Tag object with name: {0}. Related tags: {1}".format(str(self.name),

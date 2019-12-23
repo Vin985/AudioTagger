@@ -1,5 +1,5 @@
 AMGP: &id002 !!python/object:AudioTagger.tags.Tag
-  color: 4294901887
+  color: 4292878564
   keyseq: ''
   name: AMGP
   related:
@@ -113,7 +113,7 @@ Sandpiper: !!python/object:AudioTagger.tags.Tag
   - *id001
 Shorebird: *id001
 UNKN: !!python/object:AudioTagger.tags.Tag
-  color: 4294901887
+  color: 4285878395
   keyseq: '4'
   name: UNKN
   related:

@@ -121,10 +121,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         # Label creation settings
         self.createOn = True
         self.activeLabel = None
-        self.unconfiguredLabels = []
         self.labelRects = []
         self.labelRect = None
         self.labels = Tags()
+        self.unconfiguredLabels = Tags()
         self.setupLabelMenu()
         if labelTypes is None:
             if not ignoreSettings:
@@ -497,12 +497,15 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.shortcuts[i].setEnabled(False)
                 del self.shortcuts[i]
 
+    def update_labelRects(self):
+        for labelRect in self.labelRects:
+            labelRect.update()
+
     def update_labels_Ui(self):
-        cc = self.contentChanged
 
         # update all label colours by forcing a redraw
-        self.labels_to_labelRects(self.labelRects_to_labels())
-        self.contentChanged = cc
+        self.update_labelRects()
+        # self.labels_to_labelRects(self.labelRects_to_labels())
 
         # Remove all entries in annotation combobox
         self.cb_labelType.clear()
@@ -521,9 +524,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_label_name(self, old, new):
         for labelRect in self.labelRects:
-            if labelRect.infoString == old:
-                labelRect.setInfoString(new)
-                print("replacing: " + old + "by: " + new)
+            if labelRect.label == old:
+                labelRect.update_infostring()
+                # labelRect.setInfoString(new)
+                # print("replacing: " + old + "by: " + new)
 
     def change_file(self, item):
         file = item.text(0)
@@ -681,7 +685,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         canProceed = self.checkIfSavingNecessary()
         if not canProceed:
             return
-        self.unconfiguredLabels = []
+        self.unconfiguredLabels = Tags()
         self.current_file = file_name
         self.resetView()
 
@@ -953,20 +957,25 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             msgBox.exec_()
             return
 
-        rect = QtCore.QRectF(x, y, 0, 0)
         if self.labelRect:
             self.overviewScene.removeItem(self.labelRect)
 
-        penCol = self.labels.get_color(self.cb_labelType.currentText())
+        label_id = self.next_label_id
+        self.next_label_id += 1
 
-        self.labelRect = LabelRectItem(menu=self.menu,
-                                       contextRegisterCallback=self.registerLastLabelRectContext,
-                                       infoString=self.cb_labelType.currentText(),
+        print(label_id)
+
+        label_class = self.labels[self.cb_labelType.currentText()]
+
+        self.labelRect = LabelRectItem(label_id=label_id,
+                                       label_class=label_class,
+                                       sr=self.sound_player.sr,
+                                       spec_opts=self.spec_opts,
+                                       menu=self.menu,
+                                       context_register_callback=self.registerLastLabelRectContext,
                                        rectChangedCallback=self.labelRectChangedSlot)
         self.labelRect.deactivate()
         self.labelRect.setRect(x, y, 20, 20)
-        self.labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
-        self.labelRect.setupInfoTextItem(fontSize=12, color=penCol)
         self.overviewScene.addItem(self.labelRect)
 
         self.rectOrgX = x
@@ -975,11 +984,13 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.isRectangleOpen = True
 
     def closeSceneRectangle(self, scenePos):
+        print("close")
         x = int(scenePos.x())
         y = int(scenePos.y())
         # Do not create an annotation if it is a single click
         if x == self.rectOrgX and y == self.rectOrgY:
             self.overviewScene.removeItem(self.labelRect)
+            self.next_label_id -= 1
         else:
             self.labelRects.append(self.labelRect)
             self.labelRects.sort(key=self.getLabelTimeValue)
@@ -1012,6 +1023,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.isRectangleOpen:
             self.overviewScene.removeItem(self.labelRect)
             self.isRectangleOpen = False
+            self.next_label_id -= 1
         else:
             self.select_tag(None)
         self.labelRect = None
@@ -1025,6 +1037,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         for labelRect in self.labelRects:
             self.overviewScene.removeItem(labelRect)
 
+        self.next_label_id = 0
         self.labelRects = []
         self.contentChanged = True
 
@@ -1035,9 +1048,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def changeTag(self, new_index):
         if self.activeLabel is not None:
-            label = self.labelRects[self.activeLabel]
+            labelRect = self.labelRects[self.activeLabel]
             tag = self.cb_labelType.itemText(new_index)
-            label.setInfoString(tag)
+            labelRect.label_class = self.labels[tag]
+            self.contentChanged = True
 
     ################### LABELS (SAVE/LOAD/NAVIGATION) #########################
 
@@ -1092,41 +1106,32 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             if not labelRect:
                 continue
 
-            r = [labelRect.sceneBoundingRect().x(),
-                 labelRect.sceneBoundingRect().y(),
-                 labelRect.sceneBoundingRect().width(),
-                 labelRect.sceneBoundingRect().height()]
-
-            sr = self.sound_player.sr
-            # maxium signal frequency
-            maxSigFreq = sr / 2.0
-            # step in freqency for every pixel in y-direction
-            freqStep = self.spec_opts["height"] / maxSigFreq
-
-            x1, x2, y1, y2 = self.getBoxCoordinates(r)
+            x1, x2, y1, y2 = labelRect.getBoxCoordinates()
             boundingBox = self.spec[int(x1):int(x2), int(y1):int(y2)]
 
             label = {
+                "id": labelRect.id,
                 "file": self.current_file,
-                "label": labelRect.infoString,
+                "label": labelRect.label,
                 "timestamp": dt.datetime.now().isoformat(),
                 "nstep": self.spec_opts["nstep"],
                 "nwin": self.spec_opts["nwin"],
-                "x1": x1,
-                "y1": y1,
-                "x2": x2,
-                "y2": y2,
-                "start": x1 * self.spec_opts["nstep"],
-                "end": x2 * self.spec_opts["nstep"],
-                "min_freq": maxSigFreq - (y2 / freqStep),
-                "max_freq": maxSigFreq - (y1 / freqStep),
+                # "x1": x1,
+                # "y1": y1,
+                # "x2": x2,
+                # "y2": y2,
+                "start": labelRect.start,
+                "end": labelRect.end,
+                "min_freq": labelRect.min_freq,
+                "max_freq": labelRect.max_freq,
+
                 "max_amp": np.max(boundingBox),
                 "min_amp": np.min(boundingBox),
                 "mean_amp": np.mean(boundingBox),
                 "amp_sd": np.std(boundingBox),
                 "area_datapoints": (x2 - x1) * (y2 - y1),
                 "related": ",".join(
-                    self.labels[labelRect.infoString].get_related())
+                    self.labels[labelRect.label].get_related())
             }
 
             labels += [label]
@@ -1135,74 +1140,48 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def labels_to_labelRects(self, label_infos):
         self.clearSceneRects()
-
+        max_id = 0
         for label_info in label_infos:
 
             if "id" in label_info:
                 id = int(label_info["id"])
+                max_id = id if id > max_id else max_id
             else:
                 id = self.next_label_id
                 self.next_label_id += 1
 
-            # Case where label doesnt exist
-            label_class = self.labels[label_info["label"]]
-
-            # TODO: finish here! Extract info from label_class
-            labelRect = LabelRectItem(
-                label_id=id, label_class=label_class, sr=self.sound_player.sr,
-                spec_opts=self.spec_opts, label_info=label_info, menu=self.menu,
-                context_register_callback=self.registerLastLabelRectContext,
-                infoString="label_name",
-                rectChangedCallback=self.labelRectChangedSlot)
-
-            self.spec_opts["nstep"] = float(label_info["nstep"])
-            self.spec_opts["nwin"] = float(label_info["nwin"])
-            start = float(label_info["start"])
-            end = float(label_info["end"])
-            min_freq = float(label_info["min_freq"])
-            max_freq = float(label_info["max_freq"])
             label_name = label_info["label"]
-
-            maxSigFreq = self.sound_player.sr / 2.0
-            freqStep = self.spec_opts["height"] / maxSigFreq
-
-            x1 = start / self.spec_opts["nstep"]
-            x2 = end / self.spec_opts["nstep"]
-
-            y1 = (maxSigFreq - max_freq) * freqStep
-            y2 = (maxSigFreq - min_freq) * freqStep
-
-            rect = QtCore.QRectF(x1, y1, x2 - x1, y2 - y1)
-
+            # Case where label doesnt exist
             try:
-                penCol = self.labels.get_color(label_name)
+                label_class = self.labels[label_name]
             except KeyError:
-                if label_name not in self.unconfiguredLabels:
+                if not label_name in self.unconfiguredLabels:
                     msgBox = QtWidgets.QMessageBox()
                     msgBox.setText("File contained undefined class")
                     msgBox.setInformativeText(
                         "Class <b>{c}</b> found in saved data. No colour " +
-                        "for this class defined. Using standard color. " +
-                        "Define colour in top of the source code to fix " +
-                        "this error message".format(c=label_name))
+                        "for this class defined. A temporary class was created using " +
+                        "a standard color. " +
+                        "Please add related classes if relevant and modify this new " +
+                        "class appropriately".format(c=label_name))
                     msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
                     ret = msgBox.exec_()
+                    label_class = self.unconfiguredLabels.add(label_name)
 
-                    penCol = self.LABEL_DEFAULT_COLOR
-
-                    self.unconfiguredLabels += [label_name]
-
-            labelRect = LabelRectItem(menu=self.menu,
+            labelRect = LabelRectItem(label_id=id,
+                                      label_class=label_class,
+                                      sr=self.sound_player.sr,
+                                      spec_opts=self.spec_opts,
+                                      label_info=label_info, menu=self.menu,
                                       context_register_callback=self.registerLastLabelRectContext,
-                                      infoString=label_name,
+                                      infoString="label_name",
                                       rectChangedCallback=self.labelRectChangedSlot)
-            labelRect.setRect(rect)
-            labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
-            labelRect.setupInfoTextItem(fontSize=12, color=penCol)
+
             self.overviewScene.addItem(labelRect)
             self.labelRects += [labelRect]
 
         self.labelRects.sort(key=self.getLabelTimeValue)
+        self.next_label_id = max_id + 1
 
     def save_labels(self, checked=False):
         labels = self.labelRects_to_labels()
@@ -1272,13 +1251,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.activeLabel is not None:
             old_tag = self.labelRects[self.activeLabel]
             if old_tag:
-                if not old_tag.infoString in self.unconfiguredLabels:
-                    penCol = self.labels.get_color(old_tag.infoString)
-                else:
-                    penCol = self.LABEL_DEFAULT_COLOR
-                # self.rectClasses[old_tag])
-                pen = QtGui.QPen(penCol)
-                old_tag.setPen(pen)
+                # Reset the tag color
+                old_tag.update_color()
 
         self.activeLabel = tag_idx
         if tag_idx is None:
@@ -1295,7 +1269,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             self.setZoomBoundingBox()
         # change tag in combo_box
         cb_tag_idx = self.cb_labelType.findText(
-            new_tag.infoString, QtCore.Qt.MatchExactly)
+            new_tag.label, QtCore.Qt.MatchExactly)
         self.cb_labelType.setCurrentIndex(cb_tag_idx)
 
     def toggleToItem(self, item, centerOnActiveLabel=True):
@@ -1359,9 +1333,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             if not labelRect:
                 continue
             try:
-                d[labelRect.infoString] += 1
+                d[labelRect.label] += 1
             except KeyError:
-                d[labelRect.infoString] = 1
+                d[labelRect.label] = 1
 
         return d
 

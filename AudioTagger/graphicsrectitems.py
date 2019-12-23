@@ -4,6 +4,8 @@ import sys
 import numpy as np
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from AudioTagger.contextlineedit import ContextLineEdit
+
 
 class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
     def __init__(self, callback=None, rectChangedCallback=None, *args, **kwargs):
@@ -35,6 +37,8 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
             QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
     def setResizeBoxColor(self, color):
+        if isinstance(color, str):
+            color = QtGui.QColor(color)
         self.resizeBoxColor = color
         self.setupResizeBox()
 
@@ -312,7 +316,7 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
 
 
 class InfoRectItem(ResizeableGraphicsRectItem):
-    def __init__(self, infoString=None, callback=None, *args, **kwargs):
+    def __init__(self, infoString="", callback=None, *args, **kwargs):
         super(InfoRectItem, self).__init__(callback, *args, **kwargs)
         self.infoString = infoString
         self.infoTextItem = QtWidgets.QGraphicsSimpleTextItem(
