@@ -175,8 +175,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             self.selectSpectrogramMode)
         self.sound_controller.slider_contrast.valueChanged.connect(
             self.updateLabelWithSpectrogram)
-        self.cb_labelType.currentIndexChanged.connect(
-            self.changeTag)
+        self.cb_labelType.activated.connect(
+            self.change_tag)
         self.btn_done.clicked.connect(self.set_file_done)
 
         # Tree interaction
@@ -984,7 +984,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.isRectangleOpen = True
 
     def closeSceneRectangle(self, scenePos):
-        print("close")
         x = int(scenePos.x())
         y = int(scenePos.y())
         # Do not create an annotation if it is a single click
@@ -1046,12 +1045,13 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.mouse_scene_y = int(scenePos.y())
         self.update_info_viewer()
 
-    def changeTag(self, new_index):
+    def change_tag(self, new_index):
         if self.activeLabel is not None:
             labelRect = self.labelRects[self.activeLabel]
             tag = self.cb_labelType.itemText(new_index)
-            labelRect.label_class = self.labels[tag]
-            self.contentChanged = True
+            if tag != labelRect.label:
+                labelRect.label_class = self.labels[tag]
+                self.contentChanged = True
 
     ################### LABELS (SAVE/LOAD/NAVIGATION) #########################
 
@@ -1174,7 +1174,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                                       spec_opts=self.spec_opts,
                                       label_info=label_info, menu=self.menu,
                                       context_register_callback=self.registerLastLabelRectContext,
-                                      infoString="label_name",
+                                      infoString="",
                                       rectChangedCallback=self.labelRectChangedSlot)
 
             self.overviewScene.addItem(labelRect)
@@ -1279,9 +1279,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         labelRect = self.labelRects.pop(self.activeLabel)
         self.overviewScene.removeItem(labelRect)
-
         self.activeLabel = None
-
         self.contentChanged = True
 
     def set_file_done(self, checked):
