@@ -1,7 +1,10 @@
+import time
+
 from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class KeyboardFilter(QtCore.QObject):
+
     def __init__(self, parent):
         QtCore.QObject.__init__(self)
         self.parent = parent
@@ -34,9 +37,32 @@ class KeyboardFilter(QtCore.QObject):
 
 
 class MouseFilter(QtCore.QObject):  # And this one
+
+    PRESS_OPEN_TIME = 200
+
     def __init__(self, parent):
         QtCore.QObject.__init__(self)
         self.parent = parent
+        self.timer = None
+        self.timer_args = None
+        self.timer_callback = None
+        self.timer_kwargs = None
+
+    def timerEvent(self, event):
+        if self.timer_callback:
+            self.timer_callback(*self.timer_args, **self.timer_kwargs)
+        self.stop_timer()
+
+    def start_timer(self, func, *args, **kwargs):
+        self.timer = self.startTimer(self.PRESS_OPEN_TIME)
+        self.timer_callback = func
+        self.timer_args = args
+        self.timer_kwargs = kwargs
+
+    def stop_timer(self):
+        if self.timer:
+            self.killTimer(self.timer)
+            self.timer = None
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.GraphicsSceneMouseDoubleClick:
@@ -45,6 +71,7 @@ class MouseFilter(QtCore.QObject):  # And this one
 
         elif event.type() == QtCore.QEvent.GraphicsSceneMouseRelease:
             if event.button() == QtCore.Qt.LeftButton:
+                self.stop_timer()
                 self.parent.releaseInScene(event.scenePos())
             elif event.button() == QtCore.Qt.MiddleButton:
                 self.parent.seekSound(event.scenePos().x())
@@ -53,7 +80,8 @@ class MouseFilter(QtCore.QObject):  # And this one
 
         elif event.type() == QtCore.QEvent.GraphicsSceneMousePress:
             if event.button() == QtCore.Qt.LeftButton:
-                self.parent.clickInScene(event.scenePos())
+                self.start_timer(self.parent.clickInScene, event.scenePos())
+                # self.parent.clickInScene(event.scenePos())
 
         elif event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
             self.parent.show_position(event.scenePos())
