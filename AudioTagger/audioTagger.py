@@ -1252,24 +1252,21 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             old_tag = self.labelRects[self.activeLabel]
             if old_tag:
                 # Reset the tag color
-                old_tag.update_color()
+                old_tag.selected = False
 
         self.activeLabel = tag_idx
         if tag_idx is None:
             return
 
-        new_tag = self.labelRects[self.activeLabel]
-        penCol = QtGui.QColor()
-        penCol.setRgb(255, 255, 255)
-        pen = QtGui.QPen(penCol)
-        new_tag.setPen(pen)
+        selected_tag = self.labelRects[self.activeLabel]
+        selected_tag.selected = True
 
         if centerOnActiveLabel:
-            self.scrollView.centerOn(new_tag)
+            self.scrollView.centerOn(selected_tag)
             self.setZoomBoundingBox()
         # change tag in combo_box
         cb_tag_idx = self.cb_labelType.findText(
-            new_tag.label, QtCore.Qt.MatchExactly)
+            selected_tag.label, QtCore.Qt.MatchExactly)
         self.cb_labelType.setCurrentIndex(cb_tag_idx)
 
     def toggleToItem(self, item, centerOnActiveLabel=True):

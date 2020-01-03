@@ -1,4 +1,4 @@
-from PySide2 import QtCore
+from PySide2 import QtCore, QtGui
 
 from AudioTagger.graphicsrectitems import ContextMenuItem, InfoRectItem
 
@@ -6,6 +6,7 @@ from AudioTagger.graphicsrectitems import ContextMenuItem, InfoRectItem
 class LabelRectItem(InfoRectItem, ContextMenuItem):
 
     RESIZE_COLOR = "#32ffffff"
+    SELECTED_COLOR = "#ffffffff"
 
     def __init__(self, label_id=0, label_class=None, sr=0, spec_opts=None, label_info=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -18,12 +19,25 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         self.spec_opts = spec_opts
         self.sr = sr
         self.font_size = 12
+        self._selected = False
         self.setResizeBoxColor(self.RESIZE_COLOR)
+
+        self.label_class = label_class
 
         if label_info:
             self.extract_info(label_info)
 
-        self.label_class = label_class
+    @property
+    def selected(self):
+        return self._selected
+
+    @selected.setter
+    def selected(self, selected):
+        self._selected = selected
+        if selected:
+            self.setPen(QtGui.QPen(self.SELECTED_COLOR))
+        else:
+            self.setPen(QtGui.QPen(self.label_class.color))
 
     @property
     def label_class(self):
@@ -33,11 +47,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def label_class(self, label_class):
         self._label_class = label_class
         if label_class:
-            self.load_label_class()
-
-    def load_label_class(self):
-        self.setInfoString(".".join([str(self.id), self.label_class.name]))
-        self.setupInfoTextItem(fontSize=12, color=self.label_class.color)
+            self.update()
 
     def setRect(self, *args, update_fields=True, **kwargs):
         super().setRect(*args, **kwargs)
@@ -80,7 +90,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def update_infostring(self):
         if self.label != self.label_class.name:
             self.label = self.label_class.name
-            self.setInfoString(".".join([str(self.id), self.label_class.name]))
+            self.setInfoString(".".join([str(self.id), self.label]))
 
     def update_color(self):
         self.setupInfoTextItem(fontSize=12, color=self.label_class.color)
