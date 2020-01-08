@@ -20,6 +20,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         self.sr = sr
         self.font_size = 12
         self._selected = False
+        self.overlap = []
         self.setResizeBoxColor(self.RESIZE_COLOR)
 
         self.label_class = label_class
@@ -95,9 +96,18 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def update_color(self):
         self.setupInfoTextItem(fontSize=12, color=self.label_class.color)
 
+    def duration(self):
+        return round(self.end - self.start, 3)
+
     def update(self):
         self.update_infostring()
         self.update_color()
+
+    def get_overlaps(self):
+        intersects = self.collidingItems()
+        overlaps = [str(item.id) for item in intersects if isinstance(
+            item, self.__class__)]
+        return overlaps
 
     def getBoxCoordinates(self):
         """
@@ -140,30 +150,3 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         # y2 = (y2 - SpecRows)#*-1
 
         return x1, x2, y1, y2
-
-
-# try:
-#     penCol = self.labels.get_color(label_name)
-# except KeyError:
-#     if label_name not in self.unconfiguredLabels:
-#         msgBox = QtWidgets.QMessageBox()
-#         msgBox.setText("File contained undefined class")
-#         msgBox.setInformativeText(
-#             "Class <b>{c}</b> found in saved data. No colour " +
-#             "for this class defined. Using standard color. " +
-#             "Define colour in top of the source code to fix " +
-#             "this error message".format(c=label_name))
-#         msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-#         ret = msgBox.exec_()
-#
-#         penCol = self.LABEL_DEFAULT_COLOR
-#
-#         self.unconfiguredLabels += [label_name]
-#
-# labelRect = LabelRectItem(menu=self.menu,
-#                           context_register_callback=self.registerLastLabelRectContext,
-#                           infoString=label_name,
-#                           rectChangedCallback=self.labelRectChangedSlot)
-# labelRect.setRect(rect)
-# labelRect.setResizeBoxColor(QtGui.QColor(255, 255, 255, 50))
-# labelRect.setupInfoTextItem(fontSize=12, color=penCol)

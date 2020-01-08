@@ -963,8 +963,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         label_id = self.next_label_id
         self.next_label_id += 1
 
-        print(label_id)
-
         label_class = self.labels[self.cb_labelType.currentText()]
 
         self.labelRect = LabelRectItem(label_id=label_id,
@@ -1055,43 +1053,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     ################### LABELS (SAVE/LOAD/NAVIGATION) #########################
 
-    def getBoxCoordinates(self, r):
-        """
-        Function which parses coordinates of bounding boxes in .json files to x1, x2, y1, and y2 objects.
-
-        Takes account of different methods of drawing bounding boxes, so that coordinates are correct regardless of how bounding boxes are drawn.
-
-        Also takes account of boxes that are accidently drawn outside of the spectrogram.
-
-        """
-        # Get x coordinates. r[2] is the width of the box
-        if r[2] > 0:
-            x1 = r[0]
-            x2 = r[0] + r[2]
-        else:
-            x1 = r[0] + r[2]
-            x2 = r[0]
-
-        # Get y coordinates. r[3] is the height of the box
-        if r[3] > 0:
-            y1 = r[1]
-            y2 = r[1] + r[3]
-        else:
-            y1 = r[1] + r[3]
-            y2 = r[1]
-
-        if x1 < 0:
-            x1 = 0
-        if y1 < 0:
-            y1 = 0
-        if y2 > self.spec_opts["height"]:
-            y2 = self.spec_opts["height"]
-        # Transform y coordinates
-        # y1 = (y1 - SpecRows)#*-1
-        # y2 = (y2 - SpecRows)#*-1
-
-        return x1, x2, y1, y2
-
     def get_label_start_pos(self, label):
         start_pos = label.sceneBoundingRect().x()
         width = label.sceneBoundingRect().width()
@@ -1131,7 +1092,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 "amp_sd": np.std(boundingBox),
                 "area_datapoints": (x2 - x1) * (y2 - y1),
                 "related": ",".join(
-                    self.labels[labelRect.label].get_related())
+                    self.labels[labelRect.label].get_related()),
+                "overlap": ",".join(labelRect.get_overlaps())
             }
 
             labels += [label]
@@ -1183,7 +1145,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.labelRects.sort(key=self.getLabelTimeValue)
         self.next_label_id = max_id + 1
 
-    def save_labels(self, checked=False):
+    def save_labels(self):
         labels = self.labelRects_to_labels()
         db_utils.save_csv(self.current_file, self.label_folder, labels)
 
@@ -1269,6 +1231,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             selected_tag.label, QtCore.Qt.MatchExactly)
         self.cb_labelType.setCurrentIndex(cb_tag_idx)
 
+        self.update_info_viewer()
+
     def toggleToItem(self, item, centerOnActiveLabel=True):
         itemIdx = self.labelRects.index(item)
         self.select_tag(itemIdx, centerOnActiveLabel)
@@ -1339,6 +1303,12 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
         s = ''
+
+        if self.activeLabel:
+            label = self.labelRects[self.activeLabel]
+            s += "<p><b>Selected tag:</b> {label}; duration: {duration}s; overlaps: {overlaps}</p>".format(
+                label=label.label, duration=label.duration(), overlaps=label.get_overlaps())
+
         curTime = "%5.3f" % self.soundSec
         dur = "%5.3f" % self.soundDurationSec
 
@@ -1355,14 +1325,14 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         s += "<p><b>Sound position:</b> {curTime}/{dur} sec</p>".format(
             curTime=curTime, dur=dur)
 
+        # Display information about all annotations
         c = self.count_annotations()
-
         if c:
             s += '<p><b>Annotations:</b></p><p style=" margin-left: 30px;">'
             for k in sorted(c.keys()):
                 s += '{}  [ {} ]<br>'.format(k, c[k])
+            s += "</p>"
 
-            s += "</p}"
         self.info_viewer.setText(s)
 
 
