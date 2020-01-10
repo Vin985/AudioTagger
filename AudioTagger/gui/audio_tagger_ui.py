@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'audio_tagger.ui',
 # licensing of 'audio_tagger.ui' applies.
 #
-# Created: Thu Dec 19 13:10:34 2019
+# Created: Fri Jan 10 11:20:29 2020
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -269,7 +269,21 @@ class Ui_MainWindow(object):
         self.cb_labelType = QtWidgets.QComboBox(self.groupBox_2)
         self.cb_labelType.setObjectName("cb_labelType")
         self.horizontalLayout_16.addWidget(self.cb_labelType)
-        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Minimum)
+        self.label = QtWidgets.QLabel(self.groupBox_2)
+        self.label.setObjectName("label")
+        self.horizontalLayout_16.addWidget(self.label)
+        self.pb_background = QtWidgets.QPushButton(self.groupBox_2)
+        self.pb_background.setText("")
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap(":/icons/toggle-off"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon8.addPixmap(QtGui.QPixmap(":/icons/toggle-on"), QtGui.QIcon.Active, QtGui.QIcon.On)
+        self.pb_background.setIcon(icon8)
+        self.pb_background.setIconSize(QtCore.QSize(20, 20))
+        self.pb_background.setCheckable(True)
+        self.pb_background.setFlat(True)
+        self.pb_background.setObjectName("pb_background")
+        self.horizontalLayout_16.addWidget(self.pb_background)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_16.addItem(spacerItem5)
         self.verticalLayout_4.addLayout(self.horizontalLayout_16)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -279,9 +293,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addWidget(self.label_7)
         self.btn_done = QtWidgets.QPushButton(self.groupBox_2)
         self.btn_done.setText("")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap(":/icons/toggle-off"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon8.addPixmap(QtGui.QPixmap(":/icons/toggle-on"), QtGui.QIcon.Active, QtGui.QIcon.On)
         self.btn_done.setIcon(icon8)
         self.btn_done.setIconSize(QtCore.QSize(20, 20))
         self.btn_done.setCheckable(True)
@@ -366,6 +377,7 @@ class Ui_MainWindow(object):
         self.pb_last_tag.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Go to last annotation", None, -1))
         self.pb_save.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
         self.label_9.setText(QtWidgets.QApplication.translate("MainWindow", "Active label:", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("MainWindow", "In background:", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("MainWindow", "File Done:", None, -1))
         self.menuFile.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
         self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
