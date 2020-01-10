@@ -21,6 +21,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         self.font_size = 12
         self._selected = False
         self.overlap = []
+        self.background = False
         self.setResizeBoxColor(self.RESIZE_COLOR)
 
         self.label_class = label_class
