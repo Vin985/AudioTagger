@@ -4,7 +4,7 @@ import os.path
 
 from bidict import bidict
 
-TO_APPEND = "-sceneRect2"
+TO_APPEND = "-sceneRect"
 
 WAV_EXTENSIONS = [".wav", ".WAV"]
 
@@ -28,6 +28,7 @@ COLUMNS = bidict({"id": "id",
                   "amp_sd": "AmpSD",
                   "area_datapoints": "LabelArea_DataPoints",
                   "overlap": "overlap",
+                  "background": "background",
                   "related": "Related"})
 
 
@@ -65,8 +66,8 @@ def load_csv(file, folder, columns=COLUMNS, to_append=TO_APPEND):
     filename = create_label_filename(
         file, folder, to_append=to_append, ext='.csv')
 
+    res = []
     if os.path.exists(filename):
-        res = []
         with open(filename, "r") as f:
             reader = csv.DictReader(f, dialect='excel')
             for line in reader:

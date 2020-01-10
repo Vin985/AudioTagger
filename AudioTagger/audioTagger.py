@@ -178,6 +178,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.cb_labelType.activated.connect(
             self.change_tag)
         self.btn_done.clicked.connect(self.set_file_done)
+        self.pb_background.clicked.connect(self.set_background)
 
         # Tree interaction
         self.file_tree.currentItemChanged.connect(self.change_file)
@@ -320,6 +321,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                             self, self.sound_controller.pb_play.click)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_S),
                             self, self.activateSoundSeeking)
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_B),
+                            self, self.set_background)
 
         def zoomIn(): return None is self.zoom(1.5)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus),
@@ -688,6 +691,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.unconfiguredLabels = Tags()
         self.current_file = file_name
         self.resetView()
+        self.btn_done.setChecked(file_name in self.files_done)
 
         self.save_local_config()
         settings = QtCore.QSettings()
@@ -1085,7 +1089,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 "end": labelRect.end,
                 "min_freq": labelRect.min_freq,
                 "max_freq": labelRect.max_freq,
-
                 "max_amp": np.max(boundingBox),
                 "min_amp": np.min(boundingBox),
                 "mean_amp": np.mean(boundingBox),
@@ -1093,7 +1096,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 "area_datapoints": (x2 - x1) * (y2 - y1),
                 "related": ",".join(
                     self.labels[labelRect.label].get_related()),
-                "overlap": ",".join(labelRect.get_overlaps())
+                "overlap": ",".join(labelRect.get_overlaps()),
+                "background": labelRect.background
             }
 
             labels += [label]
@@ -1211,25 +1215,26 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def select_tag(self, tag_idx, centerOnActiveLabel=True):
         if self.activeLabel is not None:
-            old_tag = self.labelRects[self.activeLabel]
-            if old_tag:
+            old_labelRect = self.labelRects[self.activeLabel]
+            if old_labelRect:
                 # Reset the tag color
-                old_tag.selected = False
+                old_labelRect.selected = False
 
         self.activeLabel = tag_idx
         if tag_idx is None:
             return
 
-        selected_tag = self.labelRects[self.activeLabel]
-        selected_tag.selected = True
+        new_labelRect = self.labelRects[self.activeLabel]
+        new_labelRect.selected = True
 
         if centerOnActiveLabel:
-            self.scrollView.centerOn(selected_tag)
+            self.scrollView.centerOn(new_labelRect)
             self.setZoomBoundingBox()
         # change tag in combo_box
         cb_tag_idx = self.cb_labelType.findText(
-            selected_tag.label, QtCore.Qt.MatchExactly)
+            new_labelRect.label, QtCore.Qt.MatchExactly)
         self.cb_labelType.setCurrentIndex(cb_tag_idx)
+        self.pb_background.setChecked(new_labelRect.background)
 
         self.update_info_viewer()
 
@@ -1245,6 +1250,15 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.overviewScene.removeItem(labelRect)
         self.activeLabel = None
         self.contentChanged = True
+
+    def set_background(self, checked=None):
+        if self.activeLabel:
+            labelRect = self.labelRects[self.activeLabel]
+            if checked is None:
+                checked = (not labelRect.background)
+                self.pb_background.setChecked(checked)
+            labelRect.background = checked
+            self.contentChanged = True
 
     def set_file_done(self, checked):
         if checked:
