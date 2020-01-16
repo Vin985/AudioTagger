@@ -4,137 +4,7 @@ import sys
 import numpy as np
 from PySide2 import QtCore, QtGui, QtWidgets
 
-
-class Test(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(Test, self).__init__()
-
-        self.setupUi(self)
-        self.setupGV()
-        self.connectElements()
-        self.setupLabelMenu()
-
-        self.rectY = 7
-        self.initRect()
-
-        self.show()
-
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gv_center = QtGui.QGraphicsView(self.centralwidget)
-        self.gv_center.setGeometry(QtCore.QRect(100, 60, 561, 331))
-        self.gv_center.setObjectName("gv_center")
-        self.pb_debug = QtWidgets.QPushButton(self.centralwidget)
-        self.pb_debug.setGeometry(QtCore.QRect(540, 500, 94, 24))
-        self.pb_debug.setObjectName("pb_debug")
-        self.pb_debug.setText("push !")
-        MainWindow.setCentralWidget(self.centralwidget)
-
-    def connectElements(self):
-        self.pb_debug.clicked.connect(self.buttonClick)
-
-    def setupGV(self):
-        self.overviewScene = QtWidgets.QGraphicsScene(self)
-        # self.overviewScene.setSceneRect(0, -0.5,1, 7)
-
-        self.gv_center.setScene(self.overviewScene)
-        self.gv_center.fitInView(0, -0.5, 100, 400, QtCore.Qt.KeepAspectRatio)
-
-    def setupLabelMenu(self):
-
-        wa = QtWidgets.QWidgetAction(self)
-        self.cle = ContextLineEdit(wa, self)
-        wa.setDefaultWidget(self.cle)
-
-        self.menu = QtWidgets.QMenu(self)
-        delAction = self.menu.addAction("delete")
-        self.menu.addAction(wa)
-
-        delAction.triggered.connect(self.deleteLabel)
-        wa.triggered.connect(self.lineEditChanged)
-
-    def deleteLabel(self):
-        print("deleteLabel: " + self.lastLabelRectContext)
-
-    def lineEditChanged(self):
-        print("lineEditChanged: " + self.lastLabelRectContext)
-        self.menu.hide()
-
-    def registerLastLabelRectContext(self, labelRect):
-        self.lastLabelRectContext = labelRect
-
-    def initRect(self):
-        self.overviewScene.addLine(-5, self.rectY, 5,
-                                   self.rectY, QtGui.QPen(QtGui.QColor(255, 0, 0)))
-        self.overviewScene.addLine(-5, self.rectY + 1, 5,
-                                   self.rectY + 1, QtGui.QPen(QtGui.QColor(255, 0, 0)))
-        self.overviewScene.addLine(-5, 0, 5, 0,
-                                   QtGui.QPen(QtGui.QColor(0, 255, 0)))
-
-        # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
-        self.rect = LabelRectItem(
-            self.menu, self.registerLastLabelRectContext, "test")
-        self.rect.setRect(0, self.rectY, 100, 100)
-        self.rect.setColor(QtCore.Qt.darkRed)
-        self.overviewScene.addItem(self.rect)
-
-        # lambda pos: self.v2.setSceneRect(pos.x(), pos.y(), 100, 100))
-        self.rect2 = LabelRectItem(
-            self.menu, self.registerLastLabelRectContext, "test2")
-        self.rect2.setRect(0, self.rectY, 100, 100)
-        self.rect2.setColor(QtCore.Qt.darkBlue)
-        self.overviewScene.addItem(self.rect2)
-
-    def buttonClick(self):
-        newHeight = np.random.randint(1, 10)
-        geo = self.rect.rect()
-        geo.setHeight(newHeight)
-        self.rect.setRect(geo)
-
-        self.rect.activate()
-
-        # self.normalizeSubplot(self.rect, newHeight, self.rectY)
-
-
-class AutoCompleteLineEdit(QtWidgets.QLineEdit):
-    def __init__(self, *args, **kwargs):
-        super(AutoCompleteLineEdit, self).__init__(*args, **kwargs)
-        self.comp = QtWidgets.QCompleter([""], self)
-        self.comp.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.setCompleter(self.comp)
-        self.setModel(["hallo", "world", "we", "are"])
-
-    def setModel(self, strList):
-        self.comp.model().setStringList(strList)
-
-
-class ContextLineEdit(QtWidgets.QWidget):
-    def __init__(self, action, *args, **kwargs):
-        super(ContextLineEdit, self).__init__(*args, **kwargs)
-        self.action = action
-
-        self.label = QtWidgets.QLabel(self)
-        self.label.setText("change label to ")
-        self.autoCompeleteLineEdit = AutoCompleteLineEdit(self)
-
-        self.layout = QtWidgets.QHBoxLayout()
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.autoCompeleteLineEdit)
-
-        self.setLayout(self.layout)
-
-        self.autoCompeleteLineEdit.returnPressed.connect(action.trigger)
-
-    def text(self):
-        return self.autoCompeleteLineEdit.text()
-
-    def setModel(self, strList):
-        self.autoCompeleteLineEdit.setModel(strList)
-
-# special GraphicsRectItem that is aware of its position and does something if the position is changed
+from AudioTagger.contextlineedit import ContextLineEdit
 
 
 class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
@@ -167,6 +37,8 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
             QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
     def setResizeBoxColor(self, color):
+        if isinstance(color, str):
+            color = QtGui.QColor(color)
         self.resizeBoxColor = color
         self.setupResizeBox()
 
@@ -444,9 +316,8 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
 
 
 class InfoRectItem(ResizeableGraphicsRectItem):
-    def __init__(self, infoString=None, callback=None, *args, **kwargs):
+    def __init__(self, infoString="", callback=None, *args, **kwargs):
         super(InfoRectItem, self).__init__(callback, *args, **kwargs)
-
         self.infoString = infoString
         self.infoTextItem = QtWidgets.QGraphicsSimpleTextItem(
             infoString, parent=self)
@@ -499,11 +370,10 @@ class InfoRectItem(ResizeableGraphicsRectItem):
                 self.rect().x(), self.rect().y() - 20)
 
 
-class LabelRectItem(InfoRectItem):
-    def __init__(self, menu, contextRegisterCallback, *args, **kwargs):
-        super(LabelRectItem, self).__init__(*args, **kwargs)
+class ContextMenuItem():
+    def __init__(self, menu=None, context_register_callback=None, **kwargs):
         self.menu = menu
-        self.contextRegisterCallback = contextRegisterCallback
+        self.contextRegisterCallback = context_register_callback
 
     def contextMenuEvent(self, event):
         if not self.activated:
@@ -513,28 +383,3 @@ class LabelRectItem(InfoRectItem):
             self.contextRegisterCallback(self)
 
         self.menu.exec_(event.screenPos())
-
-
-class MouseInsideFilterObj(QtCore.QObject):  # And this one
-    def __init__(self, enterCallback, leaveCallback):
-        QtCore.QObject.__init__(self)
-        self.enterCallback = enterCallback
-        self.leaveCallback = leaveCallback
-
-    def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.Type.Enter:
-            self.enterCallback(obj)
-
-        if event.type() == QtCore.QEvent.Type.Leave:
-            self.leaveCallback(obj)
-
-        return True
-
-
-if __name__ == "__main__":
-
-    app = QtWidgets.QApplication(sys.argv)
-
-    w = Test()
-
-    sys.exit(app.exec_())

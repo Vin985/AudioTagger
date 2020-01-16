@@ -1,6 +1,6 @@
 from PySide2 import Qt, QtCore, QtWidgets
 
-from AudioTagger.selection_list_ui import Ui_SelectionList
+from AudioTagger.gui.selection_list_ui import Ui_SelectionList
 
 
 class SelectionListWidget(QtWidgets.QWidget, Ui_SelectionList):

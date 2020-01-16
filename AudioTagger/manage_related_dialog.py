@@ -1,7 +1,7 @@
 
 from PySide2 import QtCore, QtWidgets
 
-from AudioTagger.manage_related_dialog_ui import Ui_ManageRelatedDialog
+from AudioTagger.gui.manage_related_dialog_ui import Ui_ManageRelatedDialog
 
 
 class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):

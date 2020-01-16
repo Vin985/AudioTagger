@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'tag_dialog.ui',
 # licensing of 'tag_dialog.ui' applies.
 #
-# Created: Mon Aug 26 15:40:27 2019
+# Created: Fri Jan 10 11:20:17 2020
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!

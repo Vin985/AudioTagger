@@ -2,8 +2,8 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from AudioTagger.gui.tag_dialog_ui import Ui_TagDialog
 from AudioTagger.manage_related_dialog import ManageRelatedDialog
-from AudioTagger.tag_dialog_ui import Ui_TagDialog
 
 
 class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
@@ -74,7 +74,7 @@ class TagDialog(QtWidgets.QDialog, Ui_TagDialog):
         self.input_keyseq.setKeySequence(tag.keyseq)
 
         # Related tags
-        self.lbl_related_tags.setText(str(tag.get_related()))
+        self.lbl_related_tags.setText(", ".join(tag.get_related()))
 
     def select_color(self):
         color = QtWidgets.QColorDialog.getColor()

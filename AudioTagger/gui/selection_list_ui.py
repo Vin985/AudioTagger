@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'selection_list.ui',
 # licensing of 'selection_list.ui' applies.
 #
-# Created: Wed Aug 28 13:43:08 2019
+# Created: Fri Jan 10 11:19:57 2020
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
