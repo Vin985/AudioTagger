@@ -49,15 +49,6 @@ HOLA: !!python/object:AudioTagger.tags.Tag
   keyseq: ''
   name: HOLA
   related:
-<<<<<<< HEAD
-  - *id005
-Human: !!python/object:AudioTagger.tags.Tag
-  color: 4294901887
-  keyseq: ''
-  name: Human
-  related:
-  - *id004
-=======
   - *id004
 Human: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
@@ -65,7 +56,6 @@ Human: !!python/object:AudioTagger.tags.Tag
   name: Human
   related:
   - *id003
->>>>>>> 436d8b206e5280b97efb557cdf0356b76b56f31d
 Insect: !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: '5'
@@ -77,18 +67,13 @@ LALO: !!python/object:AudioTagger.tags.Tag
   keyseq: '6'
   name: LALO
   related:
-<<<<<<< HEAD
-  - *id005
+  - *id004
 LOON: !!python/object:AudioTagger.tags.Tag
   color: 4294708769
   keyseq: ''
   name: LOON
   related: []
-PUSA: &id006 !!python/object:AudioTagger.tags.Tag
-=======
-  - *id004
 PUSA: &id005 !!python/object:AudioTagger.tags.Tag
->>>>>>> 436d8b206e5280b97efb557cdf0356b76b56f31d
   color: 4294901887
   keyseq: ''
   name: PUSA
@@ -99,20 +84,14 @@ PUSA_1: !!python/object:AudioTagger.tags.Tag
   keyseq: ''
   name: PUSA_1
   related:
-<<<<<<< HEAD
-  - *id006
-Plover: *id007
+  - *id005
+Plover: *id006
 RWBL: !!python/object:AudioTagger.tags.Tag
   color: 4291231999
   keyseq: ''
   name: RWBL
   related: []
-SESA: &id008 !!python/object:AudioTagger.tags.Tag
-=======
-  - *id005
-Plover: *id006
 SESA: &id007 !!python/object:AudioTagger.tags.Tag
->>>>>>> 436d8b206e5280b97efb557cdf0356b76b56f31d
   color: 4294901887
   keyseq: ''
   name: SESA
