@@ -478,6 +478,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def changeLabelIdx(self, i):
         self.cb_labelType.setCurrentIndex(i)
+        self.change_tag(i)
 
     def addKeySequenceToShortcuts(self, keySequence, idx):
         def func(): return self.changeLabelIdx(idx)
@@ -1138,7 +1139,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                                       label_class=label_class,
                                       sr=self.sound_player.sr,
                                       spec_opts=self.spec_opts,
-                                      label_info=label_info, menu=self.menu,
+                                      label_info=label_info,
+                                      menu=self.menu,
                                       context_register_callback=self.registerLastLabelRectContext,
                                       infoString="",
                                       rectChangedCallback=self.labelRectChangedSlot)
@@ -1252,7 +1254,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.contentChanged = True
 
     def set_background(self, checked=None):
-        if self.activeLabel:
+        if self.activeLabel is not None:
             labelRect = self.labelRects[self.activeLabel]
             if checked is None:
                 checked = (not labelRect.background)
