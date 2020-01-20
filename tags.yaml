@@ -86,31 +86,37 @@ SESA: &id007 !!python/object:AudioTagger.tags.Tag
   keyseq: ''
   name: SESA
   related:
-  - *id001
+  - &id008 !!python/object:AudioTagger.tags.Tag
+    color: 4294901887
+    keyseq: '8'
+    name: Sandpiper
+    related:
+    - *id001
 SESA_1(chirp): !!python/object:AudioTagger.tags.Tag
   color: 4289560488
-  keyseq: ''
+  keyseq: '1'
   name: SESA_1(chirp)
   related:
   - *id007
 SESA_2(motorboat): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
+  keyseq: '2'
   name: SESA_2(motorboat)
   related:
   - *id007
 SESA_3(titutu): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: ''
+  keyseq: '3'
   name: SESA_3(titutu)
   related:
   - *id007
-Sandpiper: !!python/object:AudioTagger.tags.Tag
+SESA_4(other): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '8'
-  name: Sandpiper
+  keyseq: ''
+  name: SESA_4(other)
   related:
-  - *id001
+  - *id007
+Sandpiper: *id008
 Shorebird: *id001
 UNKN: !!python/object:AudioTagger.tags.Tag
   color: 4285878395
@@ -118,7 +124,7 @@ UNKN: !!python/object:AudioTagger.tags.Tag
   name: UNKN
   related:
   - *id004
-WRSA: &id008 !!python/object:AudioTagger.tags.Tag
+WRSA: &id009 !!python/object:AudioTagger.tags.Tag
   color: 4278190080
   keyseq: ''
   name: WRSA
@@ -126,19 +132,19 @@ WRSA: &id008 !!python/object:AudioTagger.tags.Tag
   - *id001
 WRSA_1(boingboingboing): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '1'
+  keyseq: ''
   name: WRSA_1(boingboingboing)
   related:
-  - *id008
+  - *id009
 WRSA_2(chirp): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '2'
+  keyseq: ''
   name: WRSA_2(chirp)
   related:
-  - *id008
+  - *id009
 WRSA_3(other): !!python/object:AudioTagger.tags.Tag
   color: 4294901887
-  keyseq: '3'
+  keyseq: ''
   name: WRSA_3(other)
   related:
-  - *id008
+  - *id009
