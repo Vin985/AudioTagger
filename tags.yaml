@@ -68,6 +68,11 @@ LALO: !!python/object:AudioTagger.tags.Tag
   name: LALO
   related:
   - *id004
+LOON: !!python/object:AudioTagger.tags.Tag
+  color: 4294708769
+  keyseq: ''
+  name: LOON
+  related: []
 PUSA: &id005 !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
@@ -81,6 +86,11 @@ PUSA_1: !!python/object:AudioTagger.tags.Tag
   related:
   - *id005
 Plover: *id006
+RWBL: !!python/object:AudioTagger.tags.Tag
+  color: 4291231999
+  keyseq: ''
+  name: RWBL
+  related: []
 SESA: &id007 !!python/object:AudioTagger.tags.Tag
   color: 4294901887
   keyseq: ''
