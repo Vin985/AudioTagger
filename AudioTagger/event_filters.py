@@ -81,6 +81,8 @@ class MouseFilter(QtCore.QObject):  # And this one
         elif event.type() == QtCore.QEvent.GraphicsSceneMousePress:
             if event.button() == QtCore.Qt.LeftButton:
                 self.start_timer(self.parent.clickInScene, event.scenePos())
+                if self.parent.activeLabel is not None:
+                    self.parent.select_tag(None)
                 # self.parent.clickInScene(event.scenePos())
 
         elif event.type() == QtCore.QEvent.GraphicsSceneMouseMove:
