@@ -60,15 +60,15 @@ class ResizeableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setCursor(QtCore.Qt.ArrowCursor)
 
-    def contextMenuEvent(self, event):
-        wa = QtWidgets.QWidgetAction(self.parent)
-        self.cle = ContextLineEdit(self.parent)
-        wa.setDefaultWidget(self.cle)
-
-        menu = QtWidgets.QMenu(self.parent)
-        menu.addAction("test")
-        menu.addAction(wa)
-        menu.exec_(event.screenPos())
+    # def contextMenuEvent(self, event):
+    #     wa = QtWidgets.QWidgetAction(self.parent)
+    #     self.cle = ContextLineEdit(self.parent)
+    #     wa.setDefaultWidget(self.cle)
+    #
+    #     menu = QtWidgets.QMenu(self.parent)
+    #     menu.addAction("test")
+    #     menu.addAction(wa)
+    #     menu.exec_(event.screenPos())
 
     def drawResizeBox(self, x, y, width, height):
         self.resizeBox.setVisible(True)
@@ -331,11 +331,17 @@ class InfoRectItem(ResizeableGraphicsRectItem):
 
         if not color:
             color = QtGui.QColor(255, 0, 0, 100)
-        self.setColor(color)
+        self.setTextColor(color)
+
+    def setRectColor(self, color):
+        self.setPen(QtGui.QPen(color))
+
+    def setTextColor(self, color):
+        self.infoTextItem.setBrush(QtGui.QBrush(color))
 
     def setColor(self, color):
-        self.setPen(QtGui.QPen(color))
-        self.infoTextItem.setBrush(QtGui.QBrush(color))
+        self.setRectColor(color)
+        self.setTextColor(color)
 
     def setInfoString(self, s):
         self.infoString = s
@@ -372,13 +378,14 @@ class InfoRectItem(ResizeableGraphicsRectItem):
 
 class ContextMenuItem():
     def __init__(self, menu=None, context_register_callback=None, **kwargs):
+        print("init context")
         self.menu = menu
         self.contextRegisterCallback = context_register_callback
 
     def contextMenuEvent(self, event):
-        if not self.activated:
-            return
-
+        # if not self.activated:
+        #     return
+        print("menu event")
         if self.contextRegisterCallback:
             self.contextRegisterCallback(self)
 

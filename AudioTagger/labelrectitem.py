@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui
+from PySide2 import QtCore, QtGui, Qt
 
 from AudioTagger.graphicsrectitems import ContextMenuItem, InfoRectItem
 
@@ -7,6 +7,9 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
     RESIZE_COLOR = "#32ffffff"
     SELECTED_COLOR = "#ffffffff"
+    BG_SUFFIX = " (bg)"
+    BG_COLOR = "#bbb4b4b4"
+    FG_COLOR = "#00ffffff"
 
     def __init__(self, label_id=0, label_class=None, sr=0, spec_opts=None, label_info=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,8 +24,9 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         self.font_size = 12
         self._selected = False
         self.overlap = []
-        self.background = False
+        self._background = False
         self.setResizeBoxColor(self.RESIZE_COLOR)
+        self.current_color = self.SELECTED_COLOR
 
         self.label_class = label_class
 
@@ -37,9 +41,26 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def selected(self, selected):
         self._selected = selected
         if selected:
-            self.setPen(QtGui.QPen(self.SELECTED_COLOR))
+            self.current_color = self.SELECTED_COLOR
         else:
-            self.setPen(QtGui.QPen(self.label_class.color))
+            self.current_color = self.label_class.color
+        self.setRectColor(self.current_color)
+
+    @property
+    def background(self):
+        return self._background
+
+    @background.setter
+    def background(self, background):
+        self._background = background
+        # info_string = self.infoString
+        if background:
+            # info_string += self.BG_SUFFIX
+            self.setBrush(QtGui.QBrush(self.BG_COLOR, QtCore.Qt.BDiagPattern))
+        else:
+            # info_string = info_string.replace(self.BG_SUFFIX, "")
+            self.setBrush(QtGui.QBrush(self.FG_COLOR, QtCore.Qt.SolidPattern))
+        # self.setInfoString(info_string)
 
     @property
     def label_class(self):
@@ -49,6 +70,8 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def label_class(self, label_class):
         self._label_class = label_class
         if label_class:
+            if not self.selected:
+                self.current_color = self.label_class.color
             self.update()
 
     def setRect(self, *args, update_fields=True, **kwargs):
@@ -73,6 +96,8 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
         self.spec_opts["nstep"] = float(label_info["nstep"])
         self.spec_opts["nwin"] = float(label_info["nwin"])
+        print(label_info["background"] == "True")
+        self.background = (label_info["background"] == "True")
 
         self.create_rect()
 
@@ -92,10 +117,12 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     def update_infostring(self):
         if self.label != self.label_class.name:
             self.label = self.label_class.name
-            self.setInfoString(".".join([str(self.id), self.label]))
+            info_string = ".".join([str(self.id), self.label])
+            self.setInfoString(info_string)
 
     def update_color(self):
         self.setupInfoTextItem(fontSize=12, color=self.label_class.color)
+        self.setRectColor(color=self.current_color)
 
     def duration(self):
         return round(self.end - self.start, 3)
