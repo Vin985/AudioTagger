@@ -252,51 +252,7 @@
                  <enum>QLayout::SetFixedSize</enum>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_5">
-                  <property name="text">
-                   <string>Position</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_4">
-                  <property name="text">
-                   <string>TextLabel</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_3">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>Vertical zoom:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>TextLabel</string>
-                  </property>
-                 </widget>
+                 <widget class="QSoundPlayer" name="sound_player" native="true"/>
                 </item>
                </layout>
               </item>
@@ -700,7 +656,7 @@
         </widget>
        </item>
        <item row="0" column="0">
-        <widget class="SoundController" name="sound_controller" native="true">
+        <widget class="SpectrogramOptions" name="spectrogram_options" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
            <horstretch>2</horstretch>
@@ -777,9 +733,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SoundController</class>
+   <class>QSoundPlayer</class>
    <extends>QWidget</extends>
-   <header>AudioTagger/sound_controller.h</header>
+   <header>pysoundplayer/gui/QSoundPlayer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SpectrogramOptions</class>
+   <extends>QWidget</extends>
+   <header>AudioTagger/spectrogram_options.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
