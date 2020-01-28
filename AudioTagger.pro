@@ -38,7 +38,13 @@ FORMS += \
     AudioTagger/classDialog2.ui \
     AudioTagger/selection_list.ui \
     AudioTagger/tag_dialog.ui \
-    AudioTagger/manage_related_dialog.ui
+    AudioTagger/manage_related_dialog.ui \
+    AudioTagger/audio_tagger.ui \
+    AudioTagger/gui/audio_tagger.ui \
+    AudioTagger/gui/selection_list.ui \
+    AudioTagger/gui/tag_dialog.ui \
+    AudioTagger/gui/manage_related_dialog.ui \
+    AudioTagger/gui/spectrogram_options.ui
 
 RESOURCES += \
     resources.qrc
