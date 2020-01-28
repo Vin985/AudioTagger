@@ -17,9 +17,9 @@ import AudioTagger.event_filters as filters
 from AudioTagger.contextlineedit import ContextLineEdit
 from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
 from AudioTagger.labelrectitem import LabelRectItem
-from AudioTagger.sound_player import SoundPlayer
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
+from pysoundplayer.gui.QSoundPlayer import QSoundPlayer
 
 # from PySide import QtCore, QtGui
 
@@ -66,17 +66,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.hide_done = False
 
         # Sound parameters
-        self.sound_player = SoundPlayer()
-        self.soundSec = 0.0
         self.soundDurationSec = 0.0
-        self.lastMarkerUpdate = None
-        self.soundMarker = None
-        self.seekingSound = False
-        self.playing = False
-        self.soundTimer = QtCore.QTimer()
-        self.soundTimer.timeout.connect(self.updateSoundPosition)
-        self.sound_speed = 1
-        self.sound_speeds = [0.1, 0.125, 0.2, 0.25, 0.5, 1, 2]
+        self.sound_marker = None
+        self.seeking_sound = False
         self.mouse_scene_y = None
         self.mouse_scene_x = None
 
@@ -165,15 +157,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pb_next_tag.clicked.connect(self.select_next_tag)
         self.pb_first_tag.clicked.connect(self.select_first_tag)
         self.pb_last_tag.clicked.connect(self.select_last_tag)
-        self.sound_controller.pb_play.clicked.connect(self.play_pause_sound)
-        self.sound_controller.pb_stop.clicked.connect(self.stopSound)
-        self.sound_controller.pb_seek.clicked.connect(
-            self.activateSoundSeeking)
-        self.sound_controller.cb_playbackSpeed.activated.connect(
-            self.selectPlaybackSpeed)
-        self.sound_controller.cb_specType.activated.connect(
+        # Todo : put in SpectrogramOptions
+        self.spectrogram_options.cb_specType.activated.connect(
             self.selectSpectrogramMode)
-        self.sound_controller.slider_contrast.valueChanged.connect(
+        self.spectrogram_options.slider_contrast.valueChanged.connect(
             self.updateLabelWithSpectrogram)
         self.cb_labelType.activated.connect(
             self.change_tag)
@@ -192,6 +179,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
         self.scrollView.verticalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
 
+        # Sound player
+        self.sound_player.update_position.connect(self.update_sound_marker)
+
     def configureElements(self):
         self.scrollView.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Ignored)
@@ -200,9 +190,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         h = self.spec_opts["height"]
         self.sceneRect = QtCore.QRectF(0, 0, w, h)
         self.overviewScene.setSceneRect(self.sceneRect)
-
-        self.sound_controller.init_playback_speeds(
-            self.sound_speeds, self.sound_speed)
 
     ######################## GUI STUFF ########################
 
@@ -318,9 +305,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape),
                             self, self.abortSceneRectangle)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
-                            self, self.sound_controller.pb_play.click)
+                            self, self.sound_player.btn_play.click)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_S),
-                            self, self.activateSoundSeeking)
+                            self, self.activate_sound_seeking)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_B),
                             self, self.set_background)
 
@@ -538,18 +525,14 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         if file != self.current_file:
             self.load_file(file)
 
-    def selectPlaybackSpeed(self, idx):
-        self.change_playback_speed(
-            float(self.sound_controller.cb_playbackSpeed.itemText(idx)))
-
     def selectSpectrogramMode(self, idx):
         canProceed = self.checkIfSavingNecessary()
 
         if not canProceed:
             if idx == 0:
-                self.sound_controller.cb_specType.setCurrentIndex(1)
+                self.spectrogram_options.cb_specType.setCurrentIndex(1)
             elif idx == 1:
-                self.sound_controller.cb_specType.setCurrentIndex(0)
+                self.spectrogram_options.cb_specType.setCurrentIndex(0)
             return
 
         if idx == 0:
@@ -561,91 +544,39 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.updateViews()
 
     ################### SOUND STUFF #######################
-    def updateSoundMarker(self):
+    def update_sound_marker(self, position_sec):
         # 100 # multiply by step-size in SpecGen()
-        markerPos = self.soundSec * (1.0 / self.spec_opts["nstep"])
+        markerPos = position_sec * (1.0 / self.spec_opts["nstep"])
         line = QtCore.QLineF(markerPos, 0, markerPos, self.spec_opts["height"])
-        if not self.soundMarker:
+        if not self.sound_marker:
             penCol = QtGui.QColor()
             penCol.setRgb(255, 0, 0)
-            self.soundMarker = self.overviewScene.addLine(
+            self.sound_marker = self.overviewScene.addLine(
                 line, QtGui.QPen(penCol))
         else:
-            self.soundMarker.setLine(line)
+            self.sound_marker.setLine(line)
 
         self.gw_overview.update()
         self.overviewScene.update()
 
-        if self.sound_controller.follow():
+        if self.spectrogram_options.follow():
             self.scrollingWithoutUser = True
-            # self.soundMarker)
             self.scrollView.centerOn(markerPos, self.viewCenter.y())
             self.scrollingWithoutUser = False
             self.setZoomBoundingBox(updateCenter=False)
 
-    def change_playback_speed(self, speed):
-        self.sound_speed = speed
-        self.sound_player.change_speed(self.sound_speed)
-
-    def activateSoundSeeking(self):
-        if not self.playing:
-            self.seekingSound = True
-
-    def updateSoundPosition(self):
+    def activate_sound_seeking(self):
         if not self.sound_player.playing:
-            self.pause_sound()
-            return
+            self.seeking_sound = True
 
-        # TODO: Use sound player information instead!
-        currentTime = dt.datetime.now()
-        increment = (currentTime - self.lastMarkerUpdate).total_seconds()
-        self.soundSec += increment * self.sound_speed
-        self.lastMarkerUpdate = currentTime
-
-        self.updateSoundMarker()
-        self.update_info_viewer()
-
-    def play_sound(self):
-        if self.activeLabel is not None:
-            label = self.labelRects[self.activeLabel]
-            start = self.get_label_start_pos(label)
-            self.seekSound(start)
-        self.playing = True
-        self.sound_controller.update_play_tooltip("Pause")
-        self.sound_player.play()
-
-        self.lastMarkerUpdate = dt.datetime.now()
-        self.soundTimer.start(100)
-
-    def pause_sound(self):
-        self.playing = False
-        self.sound_player.pause()
-        self.sound_controller.update_play_tooltip("Play")
-        self.soundTimer.stop()
-
-    def play_pause_sound(self):
-        if self.playing:
-            self.pause_sound()
-        else:
-            self.play_sound()
-
-    def stopSound(self):
-        self.playing = False
-        self.sound_controller.pb_play.setText("play")
-        self.sound_player.stop()
-        # self.s4p.stop()
-        self.soundTimer.stop()
-
-    def seekSound(self, graphicsPos):
+    def seek_sound(self, graphicsPos):
         sec = graphicsPos * self.spec_opts["nstep"]
         # self.s4p.seek(sec)
         self.sound_player.seek(sec)
-        self.soundSec = sec
-        self.updateSoundMarker()
-        self.seekingSound = False
+        self.seeking_sound = False
 
-    def loadSound(self, wavfile):
-        self.sound_player.load(wavfile)
+    def load_soundfile(self, wavfile):
+        self.sound_player.load_file(wavfile)
 
         ################### WAV FILE LOAD  ######################
 
@@ -653,9 +584,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.clearSceneRects()
 
         if self.spec_opts["nstep"] == 0.01 and self.spec_opts["nwin"] == 0.03:
-            self.sound_controller.cb_specType.setCurrentIndex(0)
+            self.spectrogram_options.cb_specType.setCurrentIndex(0)
         elif self.spec_opts["nstep"] == 0.001 and self.spec_opts["nwin"] == 0.003:
-            self.sound_controller.cb_specType.setCurrentIndex(1)
+            self.spectrogram_options.cb_specType.setCurrentIndex(1)
         else:
             warnings.warn(
                 "loaded spectrogram does not fit in preprogrammed values of audible and ultrasonic range")
@@ -664,15 +595,14 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.activeLabel = None
 
-        if self.playing:
-            self.stopSound()
+        if self.sound_player.playing:
+            self.sound_player.stop()
 
-        self.soundSec = 0.0
-        self.updateSoundMarker()
+        self.update_sound_marker(0)
 
         if self.current_file:
             file_path = os.path.join(self.base_folder, self.current_file)
-            self.loadSound(file_path)
+            self.load_soundfile(file_path)
             self.updateSpecLabel(file_path)
             self.load_labels()
             self.setWindowTitle(
@@ -833,7 +763,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     def updateLabelWithSpectrogram(self):
         # clrSpec = np.uint8(plt.cm.binary(spec / np.max(spec)) * 255)#To change color, alter plt.cm.jet to plt.cm.#alternative code#
         # To change color, alter plt.cm.jet to plt.cm.#alternative code#
-        clrSpec = self.spec / self.sound_controller.contrast()
+        clrSpec = self.spec / self.spectrogram_options.contrast()
         clrSpec = np.uint8(self.cm(clrSpec) * 255)
         clrSpec = np.rot90(clrSpec, 1)
         # clrSpec = spmisc.imresize(clrSpec, 0.25)
@@ -933,8 +863,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     def clickInScene(self, scenePos):
         x = int(scenePos.x())
         y = int(scenePos.y())
-        if self.seekingSound:
-            self.seekSound(x)
+        if self.seeking_sound:
+            self.seek_sound(x)
             return
 
         if self.createOn:
@@ -1325,9 +1255,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             s += "<p><b>Selected tag:</b> {label}; duration: {duration}s; overlaps: {overlaps}</p>".format(
                 label=label.label, duration=label.duration(), overlaps=label.get_overlaps())
 
-        curTime = "%5.3f" % self.soundSec
-        dur = "%5.3f" % self.soundDurationSec
-
         if self.mouse_scene_x and self.mouse_scene_y:
             x_pos = round(self.mouse_scene_x *
                           self.soundDurationSec / self.overviewScene.width(), 3)
@@ -1337,9 +1264,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
             s += "<p><b>Mouse position:</b> {time}s;  {freq}kHz</p>".format(
                 freq=y_pos, time=x_pos)
-
-        s += "<p><b>Sound position:</b> {curTime}/{dur} sec</p>".format(
-            curTime=curTime, dur=dur)
 
         # Display information about all annotations
         c = self.count_annotations()
