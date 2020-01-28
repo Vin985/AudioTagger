@@ -74,7 +74,7 @@ class MouseFilter(QtCore.QObject):  # And this one
                 self.stop_timer()
                 self.parent.releaseInScene(event.scenePos())
             elif event.button() == QtCore.Qt.MiddleButton:
-                self.parent.seekSound(event.scenePos().x())
+                self.parent.seek_sound(event.scenePos().x())
 
             self.parent.update_info_viewer()
 
