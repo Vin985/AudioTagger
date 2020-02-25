@@ -7,10 +7,13 @@
 			"path": "/mnt/win/UMoncton/Doctorat/dev/pysoundplayer"
 		},
 		{
-			"path": "/mnt/win/UMoncton/Doctorat/dev/wac2wav"
+			"path": "/mnt/win/UMoncton/Doctorat/dev/test"
 		},
 		{
-			"path": "/mnt/win/UMoncton/Doctorat/dev/test"
+			"path": "/mnt/win/UMoncton/Doctorat/dev/ecosongs"
+		},
+		{
+			"path": "/home/vin/test"
 		}
 	],
 	"settings": {}
