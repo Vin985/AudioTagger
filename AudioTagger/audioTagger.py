@@ -711,27 +711,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.changeSpectrogramResolution(0.001, 0.003)
 
     def SpecGen(self, filepath):
-        # TODO: hande multichannel!
-
-        # audio, sr = librosa.load(filepath, sr=None)
-        # spectro = librosa.stft(
-        #     audio, 1024,  window="hamming")
-        # #spectro = librosa.feature.melspectrogram(S=spectro)
-        # spec = np.log(np.abs(spectro))
-        # print(spec.shape)
-        # # if self.denoised:
-        # #     # TODO: check SNR to remove noise?
-        # #     spec = self.remove_noise(spec, self.nr_N,
-        # #                              self.nr_hist_rel_size, self.nr_window_smoothing)
-        # #     spec = spec.astype("float32")
-        # #
-        # # if self.normalize:
-        # #     spec = librosa.util.normalize(spec)
-        # #
-        # # if self.to_db:
-        # #     spec = librosa.amplitude_to_db(spec, ref=np.max)
-        # #
-        # return spec.T
         """
         Code to generate spectrogram adapted from code posted on https://mail.python.org/pipermail/chicago/2010-December/007314.html by Ken Schutte (kenshutte@gmail.com)
         """
@@ -1319,24 +1298,7 @@ class MovableGraphicsRectItem(QtWidgets.QGraphicsRectItem):
         self.setCursor(QtCore.Qt.ArrowCursor)
 
 
-def main(ignoreSettings=False):
-    labelTypes = OrderedDict()
-
-    penCol = QtGui.QColor()
-    penCol.setRgb(96, 96, 96)
-    labelTypes["bat"] = penCol
-
-    penCol = QtGui.QColor()
-    penCol.setRgb(51, 51, 255)
-    labelTypes["bird"] = penCol
-
-    penCol = QtGui.QColor()
-    penCol.setRgb(255, 0, 127)
-    labelTypes["plane"] = penCol
-
-    penCol = QtGui.QColor()
-    penCol.setRgb(255, 0, 255)
-    labelTypes["car"] = penCol
+def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
@@ -1344,8 +1306,7 @@ def main(ignoreSettings=False):
     app.setOrganizationDomain("https://github.com/vin985/AudioTagger")
     app.setApplicationName("audioTagger")
 
-    w = AudioTagger(base_folder=None, label_folder=None, labelTypes=None,
-                    ignoreSettings=False)
+    w = AudioTagger(base_folder=None, label_folder=None)
 
     sys.exit(app.exec_())
 
