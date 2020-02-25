@@ -659,8 +659,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         return fileList
 
     def open_folder(self, wavFolder=None, label_folder=None):
-        # reset current file as we are changing directory
-        self.current_file = None
 
         # Open
         if wavFolder is None:
@@ -672,8 +670,6 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if not wavFolder:
             return
-
-        self.load_local_config()
 
         if label_folder is None:
             dialog = QtWidgets.QFileDialog()
