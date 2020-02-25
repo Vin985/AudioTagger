@@ -670,8 +670,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                                                     "Open Folder with wav files",
                                                     "")
 
-        self.filelist = self.get_file_list(wavFolder, WAV_EXTENSIONS)
-        self.base_folder = wavFolder
+        if not wavFolder:
+            return
 
         self.load_local_config()
 
@@ -680,15 +680,25 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             dialog.setFileMode(QtWidgets.QFileDialog.Directory)
             label_folder = dialog.getExistingDirectory(self,
                                                        "Open Folder with label files",
-                                                       os.path.split(wavFolder)[0])
+                                                       wavFolder)
+        if not label_folder:
+            return
+
+        self.base_folder = wavFolder
             self.label_folder = label_folder
+
+        # reset current file as we are changing directory
+        self.current_file = None
+
+        self.filelist = self.get_file_list(wavFolder, WAV_EXTENSIONS)
+
+        self.load_local_config()
 
         self.saveFoldersLocal()
 
         self.load_file(self.current_file)
 
         self.init_tree()
-        # TODO: reinit tree
 
     ####################### SPECTROGRAM #############################
 
