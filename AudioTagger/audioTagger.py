@@ -4,9 +4,11 @@ import os
 import sys
 import traceback
 import warnings
-from collections import OrderedDict
+from pathlib import Path
 
+import librosa
 import numpy as np
+import pandas as pd
 import qimage2ndarray as qim2np
 import scipy.io.wavfile
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -19,7 +21,7 @@ from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
 from AudioTagger.labelrectitem import LabelRectItem
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
-from pysoundplayer.gui.QSoundPlayer import QSoundPlayer
+from pysoundplayer import audio
 
 # from PySide import QtCore, QtGui
 
@@ -174,6 +176,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionOpen_folder.triggered.connect(self.open_folder)
         self.actionClass_settings.triggered.connect(self.openClassSettings)
         self.actionExport_settings.triggered.connect(self.exportSettings)
+        self.action_split_files.triggered.connect(self.split_files)
 
         # Scroll bars
         self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
@@ -543,7 +546,82 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.resetView()
         self.updateViews()
 
-    ################### SOUND STUFF #######################
+    def split_files(self, *args, dest_dir="split", min_duration=1, **kwargs):
+        # Path(self.base_folder).joinpath("new")
+        dest_dir = Path("/home/vin/Desktop/test_split")
+        labels_dest_dir = dest_dir.joinpath("labels")
+
+        if not labels_dest_dir.exists():
+            labels_dest_dir.mkdir(parents=True, exist_ok=True)
+        if self.filelist:
+            for file_path in self.filelist:
+                labels = None
+                # Load file
+                audio_file = audio.Audio(file_path)
+
+                # Get intervals without silences
+                sound_intervals = librosa.effects.split(
+                    audio_file.data, *args, **kwargs)
+
+                # If the file needs to be splitted
+                if len(sound_intervals) > 1:
+                    print("Splitting file: " + file_path)
+                    cpt = 1
+                    # Load label files if it exits
+                    label_file = db_utils.create_label_filename(
+                        os.path.basename(file_path), self.label_folder)
+                    if os.path.exists(label_file):
+                        labels = pd.read_csv(label_file)
+
+                    # Iterate on intervals
+                    for interval in sound_intervals:
+
+                        # Create new file name
+                        new_file = os.path.basename(
+                            file_path)[:-4] + "_" + str(cpt) + ".wav"
+
+                        start = interval[0]
+                        end = interval[1]
+
+                        # Do not keep small audio sample
+                        if audio_file.frames_to_seconds(end - start) < min_duration:
+                            continue
+
+                        print("Creating new file: " + new_file)
+                        audio_file.write(file_path=str(dest_dir.joinpath(
+                            new_file)), start=start, end=end)
+
+                        # If the file has labels
+                        if labels is not None:
+                            # Get the labels associated to the extract
+                            start_s = audio_file.frames_to_seconds(start)
+                            end_s = audio_file.frames_to_seconds(end)
+                            current_labels = labels.loc[(labels.LabelStartTime_Seconds.between(start_s, end_s)) |
+                                                        (labels.LabelEndTime_Seconds.between(start_s, end_s))]
+                            # If the extract has labels, change their time
+                            if not current_labels.empty:
+                                current_labels = current_labels.copy()
+                                current_labels.LabelStartTime_Seconds -= start_s
+                                current_labels.LabelEndTime_Seconds -= start_s
+
+                                # Make sure the labels now fit in the sample
+                                current_labels.loc[current_labels.LabelStartTime_Seconds <
+                                                   0, "LabelStartTime_Seconds"] = 0
+                                current_labels.loc[current_labels.LabelEndTime_Seconds >
+                                                   end_s, "LabelStartTime_Seconds"] = end_s
+
+                                dest_file = db_utils.create_label_filename(
+                                    new_file, str(labels_dest_dir))
+                                print("saving labels in:" +
+                                      str(labels_dest_dir.joinpath(dest_file)))
+                                current_labels.to_csv(
+                                    str(labels_dest_dir.joinpath(dest_file)))
+
+                        cpt += 1
+                # break
+                audio_file = None
+                ################### SOUND STUFF #######################
+
     def update_sound_marker(self, position_sec):
         # 100 # multiply by step-size in SpecGen()
         markerPos = position_sec * (1.0 / self.spec_opts["nstep"])
@@ -681,7 +759,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
         self.base_folder = wavFolder
-            self.label_folder = label_folder
+        self.label_folder = label_folder
 
         # reset current file as we are changing directory
         self.current_file = None

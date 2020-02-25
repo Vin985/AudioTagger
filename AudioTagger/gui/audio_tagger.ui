@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="frame_1">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -693,6 +693,7 @@
     <addaction name="actionClass_settings"/>
     <addaction name="actionExport_settings"/>
     <addaction name="actionImport_settings"/>
+    <addaction name="action_split_files"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -730,18 +731,23 @@
     <string>Import settings</string>
    </property>
   </action>
+  <action name="action_split_files">
+   <property name="text">
+    <string>Split files</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>QSoundPlayer</class>
    <extends>QWidget</extends>
-   <header>pysoundplayer/gui/QSoundPlayer.h</header>
+   <header>pysoundplayer.gui.QSoundPlayer.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>SpectrogramOptions</class>
    <extends>QWidget</extends>
-   <header>AudioTagger/spectrogram_options.h</header>
+   <header>AudioTagger.spectrogram_options.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
