@@ -6,6 +6,7 @@ import traceback
 import warnings
 from pathlib import Path
 
+
 import librosa
 import numpy as np
 import pandas as pd
@@ -15,6 +16,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 import AudioTagger.colourMap as CM
 import AudioTagger.db_utils as db_utils
+import AudioTagger.utils as utils
 import AudioTagger.event_filters as filters
 from AudioTagger.contextlineedit import ContextLineEdit
 from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
@@ -307,12 +309,13 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                             self, self.deteleActiveLabel)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape),
                             self, self.abortSceneRectangle)
-        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
-                            self, self.sound_player.btn_play.click)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_S),
                             self, self.activate_sound_seeking)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_B),
                             self, self.set_background)
+
+        # QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
+        #                     self, self.space, context=QtCore.Qt.ShortcutContext.WidgetShortcut)
 
         def zoomIn(): return None is self.zoom(1.5)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus),
@@ -321,6 +324,9 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         def zoomOut(): return None is self.zoom(0.75)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus),
                             self, zoomOut)
+
+    def space(self):
+        print("space")
 
     # MOVEABLE RECT
 
@@ -546,81 +552,11 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.resetView()
         self.updateViews()
 
-    def split_files(self, *args, dest_dir="split", min_duration=1, **kwargs):
-        # Path(self.base_folder).joinpath("new")
-        dest_dir = Path("/home/vin/Desktop/test_split")
-        labels_dest_dir = dest_dir.joinpath("labels")
+    def split_files(self, dest_dir="split"):
 
-        if not labels_dest_dir.exists():
-            labels_dest_dir.mkdir(parents=True, exist_ok=True)
-        if self.filelist:
-            for file_path in self.filelist:
-                labels = None
-                # Load file
-                audio_file = audio.Audio(file_path)
+        utils.split_files(self.filelist, self.label_folder, dest_dir)
 
-                # Get intervals without silences
-                sound_intervals = librosa.effects.split(
-                    audio_file.data, *args, **kwargs)
-
-                # If the file needs to be splitted
-                if len(sound_intervals) > 1:
-                    print("Splitting file: " + file_path)
-                    cpt = 1
-                    # Load label files if it exits
-                    label_file = db_utils.create_label_filename(
-                        os.path.basename(file_path), self.label_folder)
-                    if os.path.exists(label_file):
-                        labels = pd.read_csv(label_file)
-
-                    # Iterate on intervals
-                    for interval in sound_intervals:
-
-                        # Create new file name
-                        new_file = os.path.basename(
-                            file_path)[:-4] + "_" + str(cpt) + ".wav"
-
-                        start = interval[0]
-                        end = interval[1]
-
-                        # Do not keep small audio sample
-                        if audio_file.frames_to_seconds(end - start) < min_duration:
-                            continue
-
-                        print("Creating new file: " + new_file)
-                        audio_file.write(file_path=str(dest_dir.joinpath(
-                            new_file)), start=start, end=end)
-
-                        # If the file has labels
-                        if labels is not None:
-                            # Get the labels associated to the extract
-                            start_s = audio_file.frames_to_seconds(start)
-                            end_s = audio_file.frames_to_seconds(end)
-                            current_labels = labels.loc[(labels.LabelStartTime_Seconds.between(start_s, end_s)) |
-                                                        (labels.LabelEndTime_Seconds.between(start_s, end_s))]
-                            # If the extract has labels, change their time
-                            if not current_labels.empty:
-                                current_labels = current_labels.copy()
-                                current_labels.LabelStartTime_Seconds -= start_s
-                                current_labels.LabelEndTime_Seconds -= start_s
-
-                                # Make sure the labels now fit in the sample
-                                current_labels.loc[current_labels.LabelStartTime_Seconds <
-                                                   0, "LabelStartTime_Seconds"] = 0
-                                current_labels.loc[current_labels.LabelEndTime_Seconds >
-                                                   end_s, "LabelStartTime_Seconds"] = end_s
-
-                                dest_file = db_utils.create_label_filename(
-                                    new_file, str(labels_dest_dir))
-                                print("saving labels in:" +
-                                      str(labels_dest_dir.joinpath(dest_file)))
-                                current_labels.to_csv(
-                                    str(labels_dest_dir.joinpath(dest_file)))
-
-                        cpt += 1
-                # break
-                audio_file = None
-                ################### SOUND STUFF #######################
+    ################### SOUND STUFF #######################
 
     def update_sound_marker(self, position_sec):
         # 100 # multiply by step-size in SpecGen()
