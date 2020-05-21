@@ -1,1 +1,7 @@
 librosa
+pandas
+PySide2
+matplotlib
+bidict
+pyaudio
+pyyaml
