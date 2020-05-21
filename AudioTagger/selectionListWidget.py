@@ -1,4 +1,4 @@
-from PySide2 import Qt, QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets
 
 from AudioTagger.gui.selection_list_ui import Ui_SelectionList
 
