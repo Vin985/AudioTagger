@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui, Qt
+from PySide2 import QtCore, QtGui
 
 from AudioTagger.graphicsrectitems import ContextMenuItem, InfoRectItem
 
