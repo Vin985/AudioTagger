@@ -4,26 +4,21 @@ import os
 import sys
 import traceback
 import warnings
-from pathlib import Path
 
-
-import librosa
 import numpy as np
-import pandas as pd
 import qimage2ndarray as qim2np
 import scipy.io.wavfile
 from PySide2 import QtCore, QtGui, QtWidgets
 
 import AudioTagger.colourMap as CM
 import AudioTagger.db_utils as db_utils
-import AudioTagger.utils as utils
 import AudioTagger.event_filters as filters
+import AudioTagger.utils as utils
 from AudioTagger.contextlineedit import ContextLineEdit
 from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
 from AudioTagger.labelrectitem import LabelRectItem
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
-from pysoundplayer import audio
 
 # from PySide import QtCore, QtGui
 
