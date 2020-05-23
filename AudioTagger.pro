@@ -24,27 +24,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp
-
-HEADERS += \
-        mainwindow.h
+        run.py \
+        AudioTagger/shortcuts_dialog.py
 
 FORMS += \
-        mainwindow.ui \
-    AudioTagger/gui_mod.ui \
-    AudioTagger/classDialog.ui \
-    AudioTagger/tag_form.ui \
-    AudioTagger/classDialog2.ui \
-    AudioTagger/selection_list.ui \
-    AudioTagger/tag_dialog.ui \
-    AudioTagger/manage_related_dialog.ui \
-    AudioTagger/audio_tagger.ui \
     AudioTagger/gui/audio_tagger.ui \
     AudioTagger/gui/selection_list.ui \
     AudioTagger/gui/tag_dialog.ui \
     AudioTagger/gui/manage_related_dialog.ui \
-    AudioTagger/gui/spectrogram_options.ui
+    AudioTagger/gui/spectrogram_options.ui \
+    AudioTagger/gui/shortcuts_dialog.ui \
+    AudioTagger/gui/shortcuts_dialog2.ui
 
 RESOURCES += \
     resources.qrc
+
+TRANSLATIONS = AudioTagger/lang/en_GB.ts AudioTagger/lang/fr_FR.ts
