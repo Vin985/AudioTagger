@@ -35,6 +35,8 @@ class Ui_MainWindow(object):
         self.actionImport_settings.setObjectName(u"actionImport_settings")
         self.action_split_files = QAction(MainWindow)
         self.action_split_files.setObjectName(u"action_split_files")
+        self.action_shortcut_list = QAction(MainWindow)
+        self.action_shortcut_list.setObjectName(u"action_shortcut_list")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
@@ -339,6 +341,30 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addLayout(self.horizontalLayout_16)
 
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.label_2 = QLabel(self.groupBox_2)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout.addWidget(self.label_2)
+
+        self.checkbox_wind = QCheckBox(self.groupBox_2)
+        self.checkbox_wind.setObjectName(u"checkbox_wind")
+
+        self.horizontalLayout.addWidget(self.checkbox_wind)
+
+        self.checkbox_rain = QCheckBox(self.groupBox_2)
+        self.checkbox_rain.setObjectName(u"checkbox_rain")
+
+        self.horizontalLayout.addWidget(self.checkbox_rain)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout)
+
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.label_7 = QLabel(self.groupBox_2)
@@ -399,6 +425,8 @@ class Ui_MainWindow(object):
         self.menubar.setGeometry(QRect(0, 0, 1152, 23))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
+        self.menuHelp = QMenu(self.menubar)
+        self.menuHelp.setObjectName(u"menuHelp")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -408,12 +436,14 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionOpen_folder)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionClass_settings)
         self.menuFile.addAction(self.actionExport_settings)
         self.menuFile.addAction(self.actionImport_settings)
         self.menuFile.addAction(self.action_split_files)
+        self.menuHelp.addAction(self.action_shortcut_list)
         self.toolBar.addAction(self.actionOpen_folder)
         self.toolBar.addAction(self.actionClass_settings)
 
@@ -429,6 +459,7 @@ class Ui_MainWindow(object):
         self.actionExport_settings.setText(QCoreApplication.translate("MainWindow", u"Export settings", None))
         self.actionImport_settings.setText(QCoreApplication.translate("MainWindow", u"Import settings", None))
         self.action_split_files.setText(QCoreApplication.translate("MainWindow", u"Split files", None))
+        self.action_shortcut_list.setText(QCoreApplication.translate("MainWindow", u"Shortcut list", None))
 #if QT_CONFIG(tooltip)
         self.pb_prev.setToolTip(QCoreApplication.translate("MainWindow", u"Show previous audio file", None))
 #endif // QT_CONFIG(tooltip)
@@ -464,9 +495,13 @@ class Ui_MainWindow(object):
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"Active label:", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"In background:", None))
         self.pb_background.setText("")
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Background noise:", None))
+        self.checkbox_wind.setText(QCoreApplication.translate("MainWindow", u"Wind", None))
+        self.checkbox_rain.setText(QCoreApplication.translate("MainWindow", u"Rain", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"File Done:", None))
         self.btn_done.setText("")
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
     # retranslateUi
 

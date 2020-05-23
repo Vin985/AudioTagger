@@ -17,6 +17,7 @@ import AudioTagger.utils as utils
 from AudioTagger.contextlineedit import ContextLineEdit
 from AudioTagger.gui.audio_tagger_ui import Ui_MainWindow
 from AudioTagger.labelrectitem import LabelRectItem
+from AudioTagger.shortcuts_dialog import ShortcutsDialog
 from AudioTagger.tag_dialog import TagDialog
 from AudioTagger.tags import Tags
 
@@ -550,6 +551,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
     def split_files(self, dest_dir="split"):
 
         utils.split_files(self.filelist, self.label_folder, dest_dir)
+
+    def show_shortcuts_list(self):
+        dialog = ShortcutsDialog(self)
+        dialog.show()
 
     ################### SOUND STUFF #######################
 
