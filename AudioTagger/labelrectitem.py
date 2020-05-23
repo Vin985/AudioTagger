@@ -10,6 +10,8 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     BG_SUFFIX = " (bg)"
     BG_COLOR = "#bbb4b4b4"
     FG_COLOR = "#00ffffff"
+    NOISE_RAIN = 1
+    NOISE_WIND = 2
 
     def __init__(self, label_id=0, label_class=None, sr=0, spec_opts=None, label_info=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,6 +27,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
         self._selected = False
         self.overlap = []
         self._background = False
+        self.noise = 0
         self.setResizeBoxColor(self.RESIZE_COLOR)
         self.current_color = self.SELECTED_COLOR
 
@@ -74,6 +77,27 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
                 self.current_color = self.label_class.color
             self.update()
 
+    def add_noise(self, noise):
+        self.noise += noise
+
+    @property
+    def rain(self):
+        return bool(self.noise & self.NOISE_RAIN)
+
+    @rain.setter
+    def rain(self, rain):
+        add = int(rain) or -1
+        self.add_noise(add * self.NOISE_RAIN)
+
+    @property
+    def wind(self):
+        return bool(self.noise & self.NOISE_WIND)
+
+    @wind.setter
+    def wind(self, wind):
+        add = int(wind) or -1
+        self.add_noise(add * self.NOISE_WIND)
+
     def setRect(self, *args, update_fields=True, **kwargs):
         super().setRect(*args, **kwargs)
         if update_fields:
@@ -96,8 +120,8 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
         self.spec_opts["nstep"] = float(label_info["nstep"])
         self.spec_opts["nwin"] = float(label_info["nwin"])
-        print(label_info["background"] == "True")
         self.background = (label_info["background"] == "True")
+        self.noise = int(label_info.get("noise", 0))
 
         self.create_rect()
 

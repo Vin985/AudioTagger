@@ -29,7 +29,8 @@ COLUMNS = bidict({"id": "id",
                   "area_datapoints": "LabelArea_DataPoints",
                   "overlap": "overlap",
                   "background": "background",
-                  "related": "Related"})
+                  "related": "Related",
+                  "noise": "noise"})
 
 
 def create_label_filename(file, folder, to_append=TO_APPEND, ext='.csv'):

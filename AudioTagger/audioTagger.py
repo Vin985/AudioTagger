@@ -166,6 +166,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             self.change_tag)
         self.btn_done.clicked.connect(self.set_file_done)
         self.pb_background.clicked.connect(self.set_background)
+        self.checkbox_rain.clicked.connect(self.set_rain)
+        self.checkbox_wind.clicked.connect(self.set_wind)
 
         # Tree interaction
         self.file_tree.currentItemChanged.connect(self.change_file)
@@ -175,6 +177,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionClass_settings.triggered.connect(self.openClassSettings)
         self.actionExport_settings.triggered.connect(self.exportSettings)
         self.action_split_files.triggered.connect(self.split_files)
+        self.action_shortcut_list.triggered.connect(self.show_shortcuts_list)
 
         # Scroll bars
         self.scrollView.horizontalScrollBar().valueChanged.connect(self.scrollbarSlideEvent)
@@ -309,6 +312,10 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                             self, self.activate_sound_seeking)
         QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_B),
                             self, self.set_background)
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_W),
+                            self, self.checkbox_wind.click)
+        QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_R),
+                            self, self.checkbox_rain.click)
 
         # QtWidgets.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space),
         #                     self, self.space, context=QtCore.Qt.ShortcutContext.WidgetShortcut)
@@ -1027,7 +1034,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 "related": ",".join(
                     self.labels[labelRect.label].get_related()),
                 "overlap": ",".join(labelRect.get_overlaps()),
-                "background": labelRect.background
+                "background": labelRect.background,
+                "noise": labelRect.noise
             }
 
             labels += [label]
@@ -1166,6 +1174,8 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
             new_labelRect.label, QtCore.Qt.MatchExactly)
         self.cb_labelType.setCurrentIndex(cb_tag_idx)
         self.pb_background.setChecked(new_labelRect.background)
+        self.checkbox_rain.setChecked(new_labelRect.rain)
+        self.checkbox_wind.setChecked(new_labelRect.wind)
 
         self.update_info_viewer()
 
@@ -1189,6 +1199,18 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 checked = (not labelRect.background)
                 self.pb_background.setChecked(checked)
             labelRect.background = checked
+            self.contentChanged = True
+
+    def set_wind(self):
+        if self.activeLabel is not None:
+            labelRect = self.labelRects[self.activeLabel]
+            labelRect.wind = self.checkbox_wind.isChecked()
+            self.contentChanged = True
+
+    def set_rain(self):
+        if self.activeLabel is not None:
+            labelRect = self.labelRects[self.activeLabel]
+            labelRect.rain = self.checkbox_rain.isChecked()
             self.contentChanged = True
 
     def set_file_done(self, checked):
