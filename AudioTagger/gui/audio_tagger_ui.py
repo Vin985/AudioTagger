@@ -410,9 +410,6 @@ class Ui_MainWindow(object):
         self.spectrogram_options.setObjectName(u"spectrogram_options")
         sizePolicy5.setHeightForWidth(self.spectrogram_options.sizePolicy().hasHeightForWidth())
         self.spectrogram_options.setSizePolicy(sizePolicy5)
-        self.verticalLayout_3 = QVBoxLayout(self.spectrogram_options)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, -1, -1, -1)
 
         self.gridLayout.addWidget(self.spectrogram_options, 0, 0, 1, 1)
 
