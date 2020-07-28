@@ -252,7 +252,7 @@
                  <enum>QLayout::SetFixedSize</enum>
                 </property>
                 <item>
-                 <widget class="QSoundPlayer" name="sound_player" native="true"/>
+                 <widget class="SoundPlayerWidget" name="sound_player" native="true"/>
                 </item>
                </layout>
               </item>
@@ -714,7 +714,7 @@
      <x>0</x>
      <y>0</y>
      <width>1152</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -784,9 +784,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QSoundPlayer</class>
+   <class>SoundPlayerWidget</class>
    <extends>QWidget</extends>
-   <header>pysoundplayer.gui.QSoundPlayer.h</header>
+   <header>pysoundplayer.widget.sound_player_widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

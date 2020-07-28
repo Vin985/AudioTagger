@@ -3,26 +3,26 @@
 ################################################################################
 ## Form generated from reading UI file 'audio_tagger.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.14.1
+## Created by: Qt User Interface Compiler version 5.15.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
+from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
+    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
+    QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
-from pysoundplayer.gui.QSoundPlayer import QSoundPlayer
+from pysoundplayer.widget.sound_player_widget import SoundPlayerWidget
 from AudioTagger.spectrogram_options import SpectrogramOptions
 
 import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        if MainWindow.objectName():
+        if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1152, 660)
         self.actionOpen_folder = QAction(MainWindow)
@@ -165,7 +165,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_12 = QHBoxLayout()
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
         self.horizontalLayout_12.setSizeConstraint(QLayout.SetFixedSize)
-        self.sound_player = QSoundPlayer(self.frame)
+        self.sound_player = SoundPlayerWidget(self.frame)
         self.sound_player.setObjectName(u"sound_player")
 
         self.horizontalLayout_12.addWidget(self.sound_player)
@@ -419,7 +419,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1152, 23))
+        self.menubar.setGeometry(QRect(0, 0, 1152, 21))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
