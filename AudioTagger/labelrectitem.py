@@ -1,6 +1,7 @@
 from PySide2 import QtCore, QtGui
 
-from AudioTagger.graphicsrectitems import ContextMenuItem, InfoRectItem
+from AudioTagger.graphicsrectitems import ContextMenuItem
+from pyqtextra.graphics.info_rect_item import InfoRectItem
 
 
 class LabelRectItem(InfoRectItem, ContextMenuItem):
@@ -13,7 +14,16 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
     NOISE_RAIN = 1
     NOISE_WIND = 2
 
-    def __init__(self, label_id=0, label_class=None, sr=0, spec_opts=None, label_info=None, *args, **kwargs):
+    def __init__(
+        self,
+        label_id=0,
+        label_class=None,
+        sr=0,
+        spec_opts=None,
+        label_info=None,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.id = label_id
         self.start = 0
@@ -120,7 +130,7 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
         self.spec_opts["nstep"] = float(label_info["nstep"])
         self.spec_opts["nwin"] = float(label_info["nwin"])
-        self.background = (label_info["background"] == "True")
+        self.background = label_info["background"] == "True"
         self.noise = int(label_info.get("noise", 0))
 
         self.create_rect()
@@ -157,8 +167,9 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
     def get_overlaps(self):
         intersects = self.collidingItems()
-        overlaps = [str(item.id) for item in intersects if isinstance(
-            item, self.__class__)]
+        overlaps = [
+            str(item.id) for item in intersects if isinstance(item, self.__class__)
+        ]
         return overlaps
 
     def getBoxCoordinates(self):
@@ -171,10 +182,12 @@ class LabelRectItem(InfoRectItem, ContextMenuItem):
 
         """
 
-        r = [self.sceneBoundingRect().x(),
-             self.sceneBoundingRect().y(),
-             self.sceneBoundingRect().width(),
-             self.sceneBoundingRect().height()]
+        r = [
+            self.sceneBoundingRect().x(),
+            self.sceneBoundingRect().y(),
+            self.sceneBoundingRect().width(),
+            self.sceneBoundingRect().height(),
+        ]
         # Get x coordinates. r[2] is the width of the box
         if r[2] > 0:
             x1 = r[0]

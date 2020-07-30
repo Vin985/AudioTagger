@@ -1,4 +1,3 @@
-
 from PySide2 import QtCore, QtWidgets
 
 from AudioTagger.gui.manage_related_dialog_ui import Ui_ManageRelatedDialog
@@ -32,8 +31,7 @@ class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):
 
     def disable_related(self, tag, min_level=0):
         related = tag.get_related(min_level=min_level)
-        self.selection_widget.disable_items(
-            self.selection_widget.list_src, related)
+        self.selection_widget.disable_items(related)
 
     def enable_related(self, tag):
         # Get all related tag from removed tag
@@ -42,8 +40,7 @@ class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):
         all_related = self.current.get_related()
         # Do not enable tags that are related to other tags
         to_enable = list(set(related) - set(all_related))
-        self.selection_widget.enable_items(
-            self.selection_widget.list_src, to_enable)
+        self.selection_widget.enable_items(to_enable)
 
     def connectSignals(self):
         self.buttonBox.accepted.connect(self.send_tags)
@@ -67,5 +64,4 @@ class ManageRelatedDialog(QtWidgets.QDialog, Ui_ManageRelatedDialog):
             self.current.remove_related(to_remove)
             self.enable_related(to_remove)
             if tag in self.current.get_related():
-                self.selection_widget.disable_items(
-                    self.selection_widget.list_src, [tag])
+                self.selection_widget.disable_items([tag])

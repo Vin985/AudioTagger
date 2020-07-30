@@ -31,7 +31,7 @@
     </widget>
    </item>
    <item>
-    <widget class="SelectionListWidget" name="selection_widget" native="true">
+    <widget class="SelectionList" name="selection_widget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -54,9 +54,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SelectionListWidget</class>
+   <class>SelectionList</class>
    <extends>QWidget</extends>
-   <header>AudioTagger/selectionListWidget.h</header>
+   <header>pyqtextra.common.selection_list.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
