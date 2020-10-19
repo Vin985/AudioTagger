@@ -962,7 +962,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.labelRects.append(self.labelRect)
             self.labelRects.sort(key=self.getLabelTimeValue)
-            self.toggleToItem(self.labelRect)
+            self.toggleToItem(self.labelRect, centerOnActiveLabel=False)
 
         self.labelRect = None
         self.contentChanged = True
