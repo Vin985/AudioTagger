@@ -1310,13 +1310,18 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if self.activeLabel:
             label = self.labelRects[self.activeLabel]
+            audio = self.sound_player.audio
+            data, _, _ = audio.get_frames(
+                int(label.start * audio.sr), int(label.end * audio.sr)
+            )
             s += (
                 "<p><b>Selected tag:</b> {label};"
-                + "duration: {duration}s; overlaps: {overlaps}</p>"
+                + "duration: {duration}s; overlaps: {overlaps}; SNR: {SNR}</p>"
             ).format(
                 label=label.label,
                 duration=label.duration(),
                 overlaps=label.get_overlaps(),
+                SNR=self.signaltonoise(data),
             )
 
         if self.mouse_scene_x and self.mouse_scene_y:
