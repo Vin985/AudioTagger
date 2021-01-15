@@ -1321,7 +1321,7 @@ class AudioTagger(QtWidgets.QMainWindow, Ui_MainWindow):
                 label=label.label,
                 duration=label.duration(),
                 overlaps=label.get_overlaps(),
-                SNR=self.signaltonoise(data),
+                #SNR=self.signaltonoise(data),
             )
 
         if self.mouse_scene_x and self.mouse_scene_y:
