@@ -7,6 +7,8 @@ pip install -U https://github.com/vin985/qimage2ndarray/archive/master.zip
 
 pip install -U https://github.com/vin985/pysoundplayer/archive/master.zip
 
+pip install -U https://github.com/vin985/pyqtextra/archive/master.zip
+
 
 git clone https://github.com/Vin985/AudioTagger
 
